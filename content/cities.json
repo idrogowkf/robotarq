@@ -1,0 +1,20 @@
+{
+  "madrid": {
+    "title": "Reformas de Bares en Madrid – Robotarq",
+    "og": "/assets/og-bares-madrid.jpg",
+    "ranges": [ 650, 900 ],
+    "sections": [ "licencia", "salida-humos", "insonorizacion", "appcc", "accesibilidad", "terrazas", "iluminacion", "normativa" ]
+  },
+  "barcelona": {
+    "title": "Reformas de Bares en Barcelona – Robotarq",
+    "og": "/assets/og-bares-bcn.jpg",
+    "ranges": [ 700, 950 ],
+    "sections": [ "licencia", "salida-humos", "insonorizacion", "appcc", "accesibilidad", "terrazas", "iluminacion", "normativa" ]
+  },
+  "valencia": {
+    "title": "Reformas de Bares en Valencia – Robotarq",
+    "og": "/assets/og-bares-val.jpg",
+    "ranges": [ 550, 800 ],
+    "sections": [ "licencia", "salida-humos", "insonorizacion", "appcc", "accesibilidad", "terrazas", "iluminacion", "normativa" ]
+  }
+}
