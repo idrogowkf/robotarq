@@ -7,17 +7,25 @@ function cls(...a) {
 }
 
 function usePhoneDefault() {
-    // Número definitivo para WhatsApp y llamadas
-    const [phone] = useState("34614016147");
+    // Nuevo número por defecto: +34 624 473 123
+    const DEFAULT = "34624473123";
+    const [phone, setPhone] = useState(DEFAULT);
+    useEffect(() => {
+        try {
+            const qs = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+            const p = qs?.get("phone");
+            setPhone(p || DEFAULT);
+        } catch { }
+    }, []);
     return phone;
 }
 
 const euro = (n) =>
     n.toLocaleString("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 
-/* ========= Rotating Headline (entre header y collage) ========= */
+/* ========= Rotating Headline ========= */
 function RotatingHeadline() {
-    const words = ["REFORMAS", "BAR", "TIENDAS", "RESTAURACIÓN"];
+    const words = ["REFORMAS", "ACABADOS", "ELECTRICIDAD", "FONTANERÍA"];
     const [i, setI] = useState(0);
     const [fade, setFade] = useState(false);
 
@@ -27,41 +35,38 @@ function RotatingHeadline() {
             setTimeout(() => {
                 setI((x) => (x + 1) % words.length);
                 setFade(false);
-            }, 200); // pequeño crossfade
-        }, 2200);
+            }, 220);
+        }, 2300);
         return () => clearInterval(id);
     }, []);
 
     return (
-        <div className="max-w-[1400px] mx-auto px-4 pt-4">
+        <div className="max-w-[1400px] mx-auto px-4 pt-5">
             <div className="rounded-2xl border-4 border-black overflow-hidden">
-                <div className="bg-black text-white grid place-items-center min-h-[18vh] sm:min-h-[22vh]">
-                    <div className="flex flex-col items-center">
-                        <h2
-                            className={cls(
-                                "text-[12vw] sm:text-[8vw] leading-none font-extrabold tracking-tight transition-opacity duration-200 mb-1",
-                                fade ? "opacity-0" : "opacity-100"
-                            )}
-                            aria-live="polite"
-                        >
-                            {words[i]}
-                        </h2>
-                        <div className="text-xs sm:text-sm text-white/80 px-3 py-1 rounded mt-1">
-                            <strong>SOLICITA TU PRESUPUESTO YA</strong>
-                        </div>
-                    </div>
+                <div className="bg-black text-white grid place-items-center min-h-[20vh] sm:min-h-[24vh] relative">
+                    <h2
+                        className={cls(
+                            "text-[12vw] sm:text-[8vw] leading-none font-extrabold tracking-tight transition-opacity duration-200 mb-6 sm:mb-10",
+                            fade ? "opacity-0" : "opacity-100"
+                        )}
+                        aria-live="polite"
+                    >
+                        {words[i]}
+                    </h2>
+                    <p className="absolute bottom-3 sm:bottom-4 text-[11px] sm:text-sm text-white/85 px-3 py-1 rounded">
+                        Reformas de bares, locales y comercios
+                    </p>
                 </div>
             </div>
         </div>
     );
 }
 
-/* ========= Mondrian Tile: cambia color ⇄ imagen de forma independiente ========= */
+/* ========= Mondrian Tile ========= */
 function MondrianTile({ className, color = "#F6C500", img, startImage = false }) {
     const [showImg, setShowImg] = useState(Boolean(startImage));
     useEffect(() => {
         let alive = true;
-        // intervalo aleatorio por tile (3–6s)
         const period = 3000 + Math.floor(Math.random() * 3000);
         const initialDelay = Math.floor(Math.random() * 1200);
         const t0 = setTimeout(() => {
@@ -70,7 +75,7 @@ function MondrianTile({ className, color = "#F6C500", img, startImage = false })
                 if (!alive) return;
                 setShowImg((s) => !s);
             }, period);
-            (MondrianTile)._id = id; // guardar para limpiar
+            (MondrianTile)._id = id;
         }, initialDelay);
         return () => {
             alive = false;
@@ -81,15 +86,10 @@ function MondrianTile({ className, color = "#F6C500", img, startImage = false })
 
     return (
         <div className={cls("relative overflow-hidden", className)}>
-            {/* Capa color */}
             <div
-                className={cls(
-                    "absolute inset-0 transition-opacity duration-700",
-                    showImg ? "opacity-0" : "opacity-100"
-                )}
+                className={cls("absolute inset-0 transition-opacity duration-700", showImg ? "opacity-0" : "opacity-100")}
                 style={{ backgroundColor: color }}
             />
-            {/* Capa imagen */}
             {img ? (
                 <div
                     className={cls(
@@ -103,9 +103,8 @@ function MondrianTile({ className, color = "#F6C500", img, startImage = false })
     );
 }
 
-/* ========= Collage Mondrian (altura fija para evitar “persiana”) ========= */
+/* ========= Collage Mondrian ========= */
 function MondrianCollage() {
-    // Imágenes locales (si alguna no existe, ese tile queda en color)
     const imgs = {
         hero: "/assets/hero-bar-reformado-01.jpg",
         d1: "/assets/caso-bar-01-despues.jpg",
@@ -114,20 +113,17 @@ function MondrianCollage() {
     };
 
     return (
-        <section className="relative max-w-[1400px] mx-auto px-4 pt-4">
+        <section className="relative max-w-[1400px] mx-auto px-4 pt-6">
             <div className="relative w-full h-[72vh] md:h-[82vh] rounded-2xl overflow-hidden border-4 border-black">
                 <div className="grid grid-cols-12 grid-rows-8 gap-1 h-full bg-white">
-                    {/* fila superior */}
                     <MondrianTile className="col-span-3 row-span-2" color="#F6C500" img={imgs.a1} />
                     <MondrianTile className="col-span-2 row-span-2" color="#E63946" img={imgs.d1} startImage />
                     <MondrianTile className="col-span-2 row-span-2" color="#1D4ED8" />
                     <MondrianTile className="col-span-1 row-span-2" color="#000000" />
                     <MondrianTile className="col-span-4 row-span-2" color="#F6C500" img={imgs.d2} />
 
-                    {/* bloque hero grande izquierda */}
                     <MondrianTile className="col-span-7 row-span-6" color="#1D4ED8" img={imgs.hero} startImage />
 
-                    {/* columna derecha con mosaico */}
                     <MondrianTile className="col-span-5 row-span-3" color="#E63946" img={imgs.d1} />
                     <MondrianTile className="col-span-3 row-span-2" color="#1D4ED8" img={imgs.a1} startImage />
                     <MondrianTile className="col-span-2 row-span-2" color="#F6C500" img={imgs.d2} />
@@ -141,18 +137,17 @@ function MondrianCollage() {
 
 /* ========= Página ========= */
 export default function Page() {
-    /* Teléfono y CTA */
-    const phone = usePhoneDefault();
+    const phone = usePhoneDefault(); // 34624473123 por defecto
     const waHref = useMemo(
         () => `https://wa.me/${phone}?text=${encodeURIComponent("Hola Robotarq, quiero reformar mi bar")}`,
         [phone]
     );
 
-    /* Calculadora */
     const [m2, setM2] = useState(120);
     const [ciudad, setCiudad] = useState("madrid");
     const [tipo, setTipo] = useState("integral");
     const [humos, setHumos] = useState("si");
+
     const basePorCiudad = {
         madrid: [650, 900],
         barcelona: [700, 950],
@@ -164,6 +159,7 @@ export default function Page() {
         alicante: [500, 740],
     };
     const multTipo = { integral: 1.0, parcial: 0.75, barra: 0.85 };
+
     const calcOut = useMemo(() => {
         const S = Math.max(20, Number(m2 || 0));
         const base = basePorCiudad[ciudad] || [550, 800];
@@ -177,9 +173,9 @@ export default function Page() {
         return { rango: `${euro(lowAdj)} – ${euro(highAdj)}`, total: `${euro(totalLow)} – ${euro(totalHigh)}` };
     }, [m2, ciudad, tipo, humos]);
 
-    /* Formulario + uploads */
     const [nombre, setNombre] = useState("");
     const [telefono, setTelefono] = useState("");
+    const [email, setEmail] = useState("");
     const [ciudad2, setCiudad2] = useState("Madrid");
     const [mensaje, setMensaje] = useState("");
     const fileRef = useRef(null);
@@ -191,57 +187,65 @@ export default function Page() {
         for (let i = 0; i < files.length; i++) {
             const f = files[i];
             setProg(Math.round(((i + 1) / files.length) * 100));
-            const presignRes = await fetch("/api/s3-presign", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ filename: f.name, type: f.type }),
-            });
-            if (!presignRes.ok) throw new Error("No se pudo generar URL de subida");
-            const presign = await presignRes.json();
-            if (presign.method === "POST" && presign.fields) {
-                const fd = new FormData();
-                Object.keys(presign.fields).forEach((k) => fd.append(k, presign.fields[k]));
-                fd.append("file", f);
-                const up = await fetch(presign.url, { method: "POST", body: fd });
-                if (!up.ok) throw new Error("Fallo al subir a S3 (POST)");
-                urls.push(presign.fileUrl);
-            } else {
-                const headers = presign.headers || { "Content-Type": f.type || "application/octet-stream" };
-                const up2 = await fetch(presign.url, { method: presign.method || "PUT", headers, body: f });
-                if (!up2.ok) throw new Error("Fallo al subir a S3 (PUT)");
-                urls.push(presign.fileUrl || presign.url.split("?")[0]);
+
+            const fd = new FormData();
+            fd.append("file", f);
+            fd.append("filename", f.name);
+
+            const endpoint =
+                typeof window !== "undefined" ? `${window.location.origin}/api/blob-upload` : "/api/blob-upload";
+
+            const res = await fetch(endpoint, { method: "POST", body: fd });
+            if (!res.ok) {
+                const t = await res.text();
+                console.error("Upload error", res.status, endpoint, t);
+                throw new Error(`Fallo al subir a Blob: ${t}`);
             }
+            const { url } = await res.json();
+            urls.push(url);
         }
-        setTimeout(() => setProg(0), 600);
+        setTimeout(() => setProg(0), 500);
         return urls;
     }
 
     async function onSubmit(e) {
         e.preventDefault();
         if (!nombre.trim() || !telefono.trim() || !mensaje.trim()) {
-            alert("Completa todos los campos obligatorios.");
+            alert("Completa todos los campos obligatorios (Nombre, Teléfono y Mensaje).");
             return;
         }
         setSending(true);
         try {
             const files = fileRef.current?.files || [];
             const fileUrls = files.length ? await uploadFiles(files) : [];
+
             const payload = {
                 nombre,
                 telefono,
+                email: email || null,
                 ciudad: ciudad2,
                 mensaje,
                 origen: "reformas-bares",
                 archivos: fileUrls,
             };
+
             const resp = await fetch("/api/send-quote", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             });
-            if (!resp.ok) throw new Error("No se pudo enviar la solicitud");
+            const txt = await resp.text();
+            if (!resp.ok) {
+                console.error("Send error", resp.status, txt);
+                throw new Error(`No se pudo enviar la solicitud: ${txt}`);
+            }
+
             alert("¡Solicitud enviada! Te contactaremos muy pronto.");
-            setNombre(""); setTelefono(""); setCiudad2("Madrid"); setMensaje("");
+            setNombre("");
+            setTelefono("");
+            setEmail("");
+            setCiudad2("Madrid");
+            setMensaje("");
             if (fileRef.current) fileRef.current.value = "";
         } catch (err) {
             console.error(err);
@@ -260,15 +264,33 @@ export default function Page() {
             <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
                 <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-2" aria-label="Robotarq">
-                        <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-800 to-sky-400 grid place-items-center text-white font-bold">R</div>
+                        <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-800 to-sky-400 grid place-items-center text-white font-bold">
+                            R
+                        </div>
                         <span className="font-bold text-lg">Robotarq</span>
                     </div>
                     <nav className="hidden md:block">
                         <ul className="flex items-center gap-3">
-                            <li><a href="#calc" className="px-3 py-2 rounded-lg hover:bg-slate-100">Calculadora</a></li>
-                            <li><a href="#packs" className="px-3 py-2 rounded-lg hover:bg-slate-100">Packs</a></li>
-                            <li><a href="#casos" className="px-3 py-2 rounded-lg hover:bg-slate-100">Proyectos</a></li>
-                            <li><a href="#contacto" className="px-3 py-2 rounded-lg bg-blue-700 text-white">Contacto</a></li>
+                            <li>
+                                <a href="#calc" className="px-3 py-2 rounded-lg hover:bg-slate-100">
+                                    Calculadora
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#packs" className="px-3 py-2 rounded-lg hover:bg-slate-100">
+                                    Packs
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#casos" className="px-3 py-2 rounded-lg hover:bg-slate-100">
+                                    Proyectos
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#contacto" className="px-3 py-2 rounded-lg bg-blue-700 text-white">
+                                    Contacto
+                                </a>
+                            </li>
                         </ul>
                     </nav>
                 </div>
@@ -277,7 +299,7 @@ export default function Page() {
             {/* HEADLINE ROTATOR */}
             <RotatingHeadline />
 
-            {/* COLLAGE MONDRIAN (transiciones independientes) */}
+            {/* COLLAGE MONDRIAN */}
             <MondrianCollage />
 
             {/* BENEFICIOS */}
@@ -323,7 +345,9 @@ export default function Page() {
                                     className="w-full mt-1 px-3 py-2 border rounded-xl"
                                 >
                                     {Object.keys(basePorCiudad).map((k) => (
-                                        <option key={k} value={k}>{k[0].toUpperCase() + k.slice(1)}</option>
+                                        <option key={k} value={k}>
+                                            {k[0].toUpperCase() + k.slice(1)}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
@@ -396,15 +420,30 @@ export default function Page() {
                 <h2 className="text-2xl sm:text-3xl font-bold text-center">Casos reales (antes / después)</h2>
                 <div className="grid md:grid-cols-3 gap-4 mt-4">
                     <figure className="border rounded-2xl overflow-hidden shadow-sm">
-                        <img src="/assets/caso-bar-01-antes.jpg" alt="Bar en Madrid antes de la reforma" className="w-full h-56 object-cover" loading="lazy" />
+                        <img
+                            src="/assets/caso-bar-01-antes.jpg"
+                            alt="Bar en Madrid antes de la reforma"
+                            className="w-full h-56 object-cover"
+                            loading="lazy"
+                        />
                         <figcaption className="p-3 text-slate-700">Antes · Madrid</figcaption>
                     </figure>
                     <figure className="border rounded-2xl overflow-hidden shadow-sm">
-                        <img src="/assets/caso-bar-01-despues.jpg" alt="Bar en Madrid después de la reforma" className="w-full h-56 object-cover" loading="lazy" />
+                        <img
+                            src="/assets/caso-bar-01-despues.jpg"
+                            alt="Bar en Madrid después de la reforma"
+                            className="w-full h-56 object-cover"
+                            loading="lazy"
+                        />
                         <figcaption className="p-3 text-slate-700">Después · Madrid</figcaption>
                     </figure>
                     <figure className="border rounded-2xl overflow-hidden shadow-sm">
-                        <img src="/assets/caso-bar-02-despues.jpg" alt="Bar moderno reformado en Barcelona" className="w-full h-56 object-cover" loading="lazy" />
+                        <img
+                            src="/assets/caso-bar-02-despues.jpg"
+                            alt="Bar moderno reformado en Barcelona"
+                            className="w-full h-56 object-cover"
+                            loading="lazy"
+                        />
                         <figcaption className="p-3 text-slate-700">Después · Barcelona</figcaption>
                     </figure>
                 </div>
@@ -433,6 +472,7 @@ export default function Page() {
                     <form onSubmit={onSubmit} className="border rounded-2xl shadow-sm p-5">
                         <h2 className="text-2xl sm:text-3xl font-bold">Cuéntanos tu proyecto</h2>
                         <p className="text-slate-600 mt-1">Formulario corto. Adjunta planos o fotos si los tienes.</p>
+
                         <div className="grid sm:grid-cols-2 gap-3 mt-4">
                             <div>
                                 <label className="text-sm">Nombre</label>
@@ -452,6 +492,18 @@ export default function Page() {
                                     placeholder="+34 6XX XXX XXX"
                                 />
                             </div>
+
+                            <div>
+                                <label className="text-sm">Email (opcional)</label>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full mt-1 px-3 py-2 border rounded-xl"
+                                    placeholder="tucorreo@dominio.com"
+                                />
+                            </div>
+
                             <div>
                                 <label className="text-sm">Ciudad</label>
                                 <select
@@ -459,16 +511,22 @@ export default function Page() {
                                     onChange={(e) => setCiudad2(e.target.value)}
                                     className="w-full mt-1 px-3 py-2 border rounded-xl"
                                 >
-                                    {["Madrid", "Barcelona", "Valencia", "Sevilla", "Málaga", "Zaragoza", "Bilbao", "Alicante"].map((c) => (
-                                        <option key={c} value={c}>{c}</option>
-                                    ))}
+                                    {["Madrid", "Barcelona", "Valencia", "Sevilla", "Málaga", "Zaragoza", "Bilbao", "Alicante"].map(
+                                        (c) => (
+                                            <option key={c} value={c}>
+                                                {c}
+                                            </option>
+                                        )
+                                    )}
                                 </select>
                             </div>
-                            <div>
+
+                            <div className="sm:col-span-2">
                                 <label className="text-sm">Adjuntar planos/fotos</label>
                                 <input ref={fileRef} type="file" multiple className="w-full mt-1 px-3 py-2 border rounded-xl" />
                             </div>
                         </div>
+
                         <div className="mt-3">
                             <label className="text-sm">Mensaje</label>
                             <textarea
@@ -479,6 +537,7 @@ export default function Page() {
                                 placeholder="Superficie, plazos y principales necesidades"
                             />
                         </div>
+
                         <div
                             className="h-2 bg-slate-200 rounded-full overflow-hidden mt-3"
                             style={{ display: prog > 0 && prog < 100 ? "block" : "none" }}
@@ -488,6 +547,7 @@ export default function Page() {
                                 style={{ width: `${prog}%` }}
                             />
                         </div>
+
                         <button disabled={sending} className="mt-3 px-4 py-3 rounded-xl bg-blue-700 text-white disabled:opacity-60">
                             {sending ? "Enviando…" : "Enviar solicitud"}
                         </button>
@@ -503,8 +563,8 @@ export default function Page() {
                             <a className="px-4 py-3 rounded-xl bg-sky-600 text-white text-center" href={`tel:+${phone}`}>
                                 Llamar ahora
                             </a>
-                            <a className="px-2 underline text-blue-700 text-center" href="mailto:hola@robotarq.es">
-                                hola@robotarq.es
+                            <a className="px-2 underline text-blue-700 text-center" href="mailto:hola@robotarq.com">
+                                hola@robotarq.com
                             </a>
                         </div>
                         <p className="text-slate-600 mt-2">Atención online, firmas electrónicas y seguimiento por internet.</p>
@@ -525,30 +585,58 @@ export default function Page() {
                     <div>
                         <h4 className="font-semibold">Servicios</h4>
                         <ul className="space-y-1 mt-1">
-                            <li><a href="/reformas-bares/" className="hover:underline">Reformas de Bares</a></li>
-                            <li><a href="/reformas-locales/" className="hover:underline">Reformas de Locales</a></li>
-                            <li><a href="/reformas-oficinas/" className="hover:underline">Reformas de Oficinas</a></li>
+                            <li>
+                                <a href="/reformas-bares/" className="hover:underline">
+                                    Reformas de Bares
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/reformas-locales/" className="hover:underline">
+                                    Reformas de Locales
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/reformas-oficinas/" className="hover:underline">
+                                    Reformas de Oficinas
+                                </a>
+                            </li>
                         </ul>
                     </div>
                     <div>
                         <h4 className="font-semibold">Ciudades</h4>
                         <ul className="space-y-1 mt-1">
                             {["madrid", "barcelona", "valencia", "sevilla", "malaga", "zaragoza", "bilbao", "alicante"].map((c) => (
-                                <li key={c}><a href={`/reformas-bares/${c}`} className="hover:underline">{c[0].toUpperCase() + c.slice(1)}</a></li>
+                                <li key={c}>
+                                    <a href={`/reformas-bares/${c}`} className="hover:underline">
+                                        {c[0].toUpperCase() + c.slice(1)}
+                                    </a>
+                                </li>
                             ))}
                         </ul>
                     </div>
                 </div>
                 <div className="text-center text-slate-500 text-sm pb-6">
-                    © {year} Robotarq · Tel: <a className="text-blue-700" href={`tel:+${phone}`}>+{phone}</a> · Email: <a className="text-blue-700" href="mailto:hola@robotarq.es">hola@robotarq.es</a>
+                    © {year} Robotarq · Tel:{" "}
+                    <a className="text-blue-700" href={`tel:+${phone}`}>
+                        +{phone}
+                    </a>{" "}
+                    · Email:{" "}
+                    <a className="text-blue-700" href="mailto:hola@robotarq.com">
+                        hola@robotarq.com
+                    </a>
                 </div>
             </footer>
 
             {/* FABs */}
             <div className="fixed right-4 bottom-4 flex flex-col gap-2">
-                <a href={waHref} target="_blank" rel="noopener" className="px-4 py-3 rounded-full bg-[#25D366] text-white shadow">WhatsApp</a>
-                <a href={`tel:+${phone}`} className="px-4 py-3 rounded-full bg-sky-600 text-white shadow">Llamar</a>
+                <a href={waHref} target="_blank" rel="noopener" className="px-4 py-3 rounded-full bg-[#25D366] text-white shadow">
+                    WhatsApp
+                </a>
+                <a href={`tel:+${phone}`} className="px-4 py-3 rounded-full bg-sky-600 text-white shadow">
+                    Llamar
+                </a>
             </div>
         </div>
     );
 }
+
