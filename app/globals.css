@@ -1,34 +1,28 @@
-/* Tailwind v4 style */
+/* app/globals.css */
 @import "tailwindcss";
 
-/* Paleta y tokens del tema (v4) */
-@theme inline {
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
-    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-}
-
-/* Variables de color (claro/oscuro) */
+/* Paleta base clara/oscura */
 :root {
     --background: #ffffff;
-    --foreground: #171717;
+    --foreground: #0f172a;
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
         --background: #0a0a0a;
-        --foreground: #ededed;
+        --foreground: #e5e7eb;
     }
 }
 
-/* Estilos base usando utilidades del tema */
 html, body {
     height: 100%;
 }
 
 body {
-    margin: 0;
-    /* Usa las utilidades generadas por @theme */
-    /* (Tailwind v4 permite @apply en cualquier CSS procesado por PostCSS) */
-    @apply bg-background text-foreground font-sans;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }

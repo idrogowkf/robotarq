@@ -3,6 +3,14 @@ import "./globals.css";
 
 export const dynamic = "force-static";
 
+/** Next 15: themeColor va en `viewport`, no en `metadata` */
+export const viewport = {
+    themeColor: [
+        { media: "(prefers-color-scheme: light)", color: "#0f172a" },
+        { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+    ],
+};
+
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export const metadata = {
@@ -25,11 +33,7 @@ export const metadata = {
         "reformas de locales",
         "reformas de oficinas",
     ],
-    authors: [{ name: "Robotarq" }],
-    themeColor: "#0f172a",
-    alternates: {
-        canonical: `${SITE_URL}/reformas-bares`,
-    },
+    alternates: { canonical: `${SITE_URL}/reformas-bares` },
     openGraph: {
         type: "website",
         url: `${SITE_URL}/reformas-bares`,
@@ -62,7 +66,7 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-    // JSON-LD (básico)
+    // JSON-LD seguros
     const org = {
         "@context": "https://schema.org",
         "@type": "Organization",
