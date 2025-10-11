@@ -1,34 +1,29 @@
 // app/estimador/page.jsx
-import { Suspense } from "react";
-import EstimadorClient from "./EstimadorClient";
-
-// Evita el pre-render estático que provoca el error durante la exportación
 export const dynamic = "force-dynamic";
+
+import EstimadorClient from "./EstimadorClient";
 
 export const metadata = {
     title: "Presupuesto técnico — robotARQ",
     description:
-        "Genera un presupuesto técnico con partidas y cantidades. robotARQ: proyecto, licencia y obra.",
+        "Describe tu reforma y genera un presupuesto técnico con partidas, cantidades y precios. Proyecto, licencia y obra.",
 };
 
 export default function Page({ searchParams }) {
-    // Lee valores iniciales del servidor y pásalos al cliente
-    const initTipo =
-        typeof searchParams?.tipo === "string" ? searchParams.tipo : "local";
-    const initPrompt =
-        typeof searchParams?.prompt === "string"
-            ? searchParams.prompt
-            : "Reforma integral de local de 100 m²: pavimento porcelánico, pintura, electricidad y accesibilidad.";
-    const initCiudad =
-        typeof searchParams?.ciudad === "string" ? searchParams.ciudad : "";
+    const initTipo = (searchParams?.tipo ?? "local").toString();
+    const initPrompt = (
+        searchParams?.prompt ??
+        "Reforma integral de local de 100 m²: pavimento porcelánico, pintura, 10 tomas, 10 puntos de luz y cambio de cuadro eléctrico."
+    ).toString();
+    const initCiudad = (searchParams?.ciudad ?? "").toString();
 
     return (
-        <Suspense fallback={<div className="p-6">Cargando…</div>}>
+        <div className="pt-24 pb-16"> {/* evita solape bajo header fijo */}
             <EstimadorClient
                 initTipo={initTipo}
                 initPrompt={initPrompt}
                 initCiudad={initCiudad}
             />
-        </Suspense>
+        </div>
     );
 }

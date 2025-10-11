@@ -3,7 +3,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-// Pequeño helper para POST JSON
+// helper POST JSON
 async function postJSON(url, data) {
     const res = await fetch(url, {
         method: "POST",
@@ -14,15 +14,78 @@ async function postJSON(url, data) {
     return res.json();
 }
 
+// Checkboxes por tipo
+const CHECKS = {
+    local: [
+        { id: "salida_humos", label: "Salida de humos" },
+        { id: "insonorizacion", label: "Insonorización" },
+        { id: "accesibilidad", label: "Adaptación accesible" },
+        { id: "electricidad_basica", label: "Electricidad básica (p. ej. 10 puntos)" },
+        { id: "iluminacion_led", label: "Iluminación LED" },
+    ],
+    vivienda: [
+        { id: "cocina", label: "Reforma de cocina" },
+        { id: "banos", label: "Reforma de baños" },
+        { id: "pintura", label: "Pintura interior" },
+        { id: "suelos", label: "Cambio de suelos" },
+        { id: "inst_electricas", label: "Revisión eléctrica" },
+    ],
+    hosteleria: [
+        { id: "cocina_industrial", label: "Cocina industrial" },
+        { id: "salida_humos", label: "Salida de humos" },
+        { id: "insonorizacion", label: "Insonorización" },
+        { id: "climatizacion", label: "Climatización" },
+        { id: "frentes_bar", label: "Frentes de barra / sala" },
+    ],
+    oficina: [
+        { id: "mamparas", label: "Mamparas / tabiques modulares" },
+        { id: "suelo_tecnico", label: "Suelo técnico" },
+        { id: "datos_red", label: "Red de datos" },
+        { id: "iluminacion_led", label: "Iluminación LED" },
+        { id: "acustica", label: "Tratamiento acústico" },
+    ],
+};
+
 export default function EstimadorClient({ initTipo, initPrompt, initCiudad }) {
+    // estado UI
     const [tipo, setTipo] = useState(initTipo || "local");
+    const [prov, setProv] = useState("");
     const [ciudad, setCiudad] = useState(initCiudad || "");
+    const [provincias, setProvincias] = useState([]); // [{nombre, localidades:[...] }]
     const [prompt, setPrompt] = useState(initPrompt || "");
+    const [checks, setChecks] = useState({});
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
     const [result, setResult] = useState(null);
 
-    // Generar presupuesto llamando a tu API interna (usa OpenAI si está configurado)
+    // cargar provincias/ciudades desde /public
+    useEffect(() => {
+        let alive = true;
+        (async () => {
+            try {
+                const res = await fetch("/provincias-es.json", { cache: "force-cache" });
+                if (!res.ok) throw new Error("No se pudo cargar provincias-es.json");
+                const data = await res.json();
+                if (alive) setProvincias(data || []);
+            } catch (e) {
+                // fallback: lista vacía; no rompemos la página
+                if (alive) setProvincias([]);
+            }
+        })();
+        return () => {
+            alive = false;
+        };
+    }, []);
+
+    const localidades = useMemo(() => {
+        const p = provincias.find((x) => x.nombre === prov);
+        return p?.localidades || [];
+    }, [provincias, prov]);
+
+    // manejadores
+    const toggleCheck = (id) =>
+        setChecks((s) => ({ ...s, [id]: !s[id] }));
+
     const onGenerate = async () => {
         setLoading(true);
         setErrorMsg("");
@@ -30,15 +93,21 @@ export default function EstimadorClient({ initTipo, initPrompt, initCiudad }) {
         try {
             const payload = {
                 tipo,
+                provincia: prov,
                 ciudad,
                 prompt,
+                // enviamos checks seleccionados
+                opciones: Object.entries(checks)
+                    .filter(([, v]) => v)
+                    .map(([k]) => k),
             };
             const data = await postJSON("/api/estimate", payload);
-            // La API debe devolver { ok, meta, budget, html? }
-            if (!data?.ok) {
-                throw new Error(data?.error || "No se pudo generar el presupuesto.");
-            }
-            setResult(data);
+            if (!data?.ok) throw new Error(data?.error || "No se pudo generar el presupuesto.");
+            setResult(data); // { ok, meta, budget, html? }
+            // scroll a resultados
+            setTimeout(() => {
+                document.getElementById("resultado-presupuesto")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 50);
         } catch (e) {
             setErrorMsg(e.message || "Error al generar el presupuesto.");
         } finally {
@@ -46,30 +115,27 @@ export default function EstimadorClient({ initTipo, initPrompt, initCiudad }) {
         }
     };
 
-    // Enviar correo (usa /api/notify del proyecto)
     const onContactar = async (formData) => {
         setLoading(true);
         setErrorMsg("");
         try {
             const payload = {
-                // datos cliente
                 name: formData.name,
                 phone: formData.phone,
                 email: formData.email,
                 empresa: formData.empresa || "",
                 nif: formData.nif || "",
-                // presupuesto generado (si existe)
                 budget: result?.budget || null,
                 meta: {
                     tipo,
+                    provincia: prov,
                     ciudad,
                     prompt,
+                    opciones: Object.entries(checks).filter(([, v]) => v).map(([k]) => k),
                 },
             };
             const data = await postJSON("/api/notify", payload);
-            if (!data?.ok) {
-                throw new Error(data?.error || "No se pudo enviar el correo.");
-            }
+            if (!data?.ok) throw new Error(data?.error || "No se pudo enviar el correo.");
             return true;
         } catch (e) {
             setErrorMsg(e.message || "Error al enviar el correo.");
@@ -79,72 +145,119 @@ export default function EstimadorClient({ initTipo, initPrompt, initCiudad }) {
         }
     };
 
-    // UI mínima (sustituye/estiliza con Tailwind según tu diseño actual)
+    // UI
+    const opciones = CHECKS[tipo] || [];
+
     return (
-        <div className="max-w-5xl mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto px-4">
             <h1 className="text-2xl md:text-3xl font-semibold">Presupuesto técnico</h1>
             <p className="text-sm text-gray-500 mt-1">
-                Describe tu reforma y genera un presupuesto con partidas y cantidades.
+                Describe tu reforma y genera un presupuesto con partidas, cantidades y precios.
             </p>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-3">
-                <div className="col-span-1">
-                    <label className="text-sm font-medium">Tipo de reforma</label>
-                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-1">
-                        {["local", "vivienda", "hosteleria", "oficina"].map((t) => (
-                            <button
-                                key={t}
-                                onClick={() => setTipo(t)}
-                                className={`border rounded px-3 py-2 text-sm text-left ${tipo === t ? "bg-black text-white" : "bg-white"
-                                    }`}
-                            >
-                                {t === "hosteleria" ? "hostelería" : t}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="col-span-1">
-                    <label className="text-sm font-medium">Ciudad</label>
-                    <input
-                        type="text"
-                        placeholder="Madrid, Barcelona, …"
-                        value={ciudad}
-                        onChange={(e) => setCiudad(e.target.value)}
-                        className="mt-2 w-full border rounded px-3 py-2 text-sm"
-                    />
-                </div>
-
-                <div className="col-span-3 sm:col-span-1 flex items-end">
-                    <button
-                        onClick={onGenerate}
-                        disabled={loading}
-                        className="w-full bg-black text-white rounded px-4 py-3 text-sm font-medium"
-                    >
-                        {loading ? "Generando…" : "Generar presupuesto"}
-                    </button>
+            {/* Botonera tipo (horizontal) */}
+            <div className="mt-6">
+                <div className="inline-flex flex-wrap gap-2">
+                    {["local", "vivienda", "hosteleria", "oficina"].map((t) => (
+                        <button
+                            key={t}
+                            onClick={() => setTipo(t)}
+                            className={`px-4 py-2 rounded border text-sm capitalize ${tipo === t ? "bg-black text-white" : "bg-white"
+                                }`}
+                            aria-pressed={tipo === t}
+                        >
+                            {t === "hosteleria" ? "hostelería" : t}
+                        </button>
+                    ))}
                 </div>
             </div>
 
-            <div className="mt-4">
+            {/* Provincia / Ciudad */}
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label className="text-sm font-medium">Provincia</label>
+                    <select
+                        className="mt-2 w-full border rounded px-3 py-2 text-sm"
+                        value={prov}
+                        onChange={(e) => {
+                            setProv(e.target.value);
+                            setCiudad("");
+                        }}
+                    >
+                        <option value="">Selecciona provincia…</option>
+                        {provincias.map((p) => (
+                            <option key={p.nombre} value={p.nombre}>
+                                {p.nombre}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div>
+                    <label className="text-sm font-medium">Ciudad</label>
+                    <select
+                        className="mt-2 w-full border rounded px-3 py-2 text-sm"
+                        value={ciudad}
+                        onChange={(e) => setCiudad(e.target.value)}
+                        disabled={!prov}
+                    >
+                        <option value="">{prov ? "Selecciona ciudad…" : "Elige antes provincia"}</option>
+                        {localidades.map((c) => (
+                            <option key={c} value={c}>
+                                {c}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            {/* Prompt grande */}
+            <div className="mt-6">
                 <label className="text-sm font-medium">Descripción (prompt)</label>
                 <textarea
-                    rows={5}
-                    className="mt-2 w-full border rounded px-3 py-2 text-sm"
+                    rows={6}
+                    className="mt-2 w-full border rounded px-3 py-3 text-base"
                     placeholder="Ej.: Reforma de 100 m² con pavimento porcelánico, pintura, 10 tomas, 10 puntos de luz y cambio de cuadro eléctrico."
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
                 />
             </div>
 
-            {errorMsg ? (
-                <div className="mt-4 p-3 rounded bg-red-50 text-red-700 text-sm">
-                    {errorMsg}
+            {/* Checkboxes contextuales */}
+            <div className="mt-4">
+                <div className="text-sm font-medium mb-2">Opciones recomendadas</div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {opciones.map((o) => (
+                        <label key={o.id} className="inline-flex items-center gap-2 text-sm">
+                            <input
+                                type="checkbox"
+                                className="h-4 w-4"
+                                checked={!!checks[o.id]}
+                                onChange={() => toggleCheck(o.id)}
+                            />
+                            {o.label}
+                        </label>
+                    ))}
                 </div>
+            </div>
+
+            {/* Botón generar: ancho completo, justo debajo del prompt */}
+            <div className="mt-6">
+                <button
+                    onClick={onGenerate}
+                    disabled={loading}
+                    className="w-full bg-black text-white rounded px-4 py-3 text-base font-semibold"
+                >
+                    {loading ? "Generando…" : "Generar presupuesto"}
+                </button>
+            </div>
+
+            {/* Errores */}
+            {errorMsg ? (
+                <div className="mt-4 p-3 rounded bg-red-50 text-red-700 text-sm">{errorMsg}</div>
             ) : null}
 
             {/* Resultado */}
-            <div className="mt-8">
+            <div id="resultado-presupuesto" className="mt-8">
                 {!result ? (
                     <div className="text-sm text-gray-500">
                         Genera tu presupuesto para ver aquí el desglose.
@@ -154,20 +267,21 @@ export default function EstimadorClient({ initTipo, initPrompt, initCiudad }) {
                 )}
             </div>
 
-            {/* Contacto (aparece siempre, o si prefieres, sólo cuando hay presupuesto) */}
-            <div className="mt-10 border-t pt-6">
-                <h2 className="text-lg font-semibold">Contactar técnico comercial de obras</h2>
-                <ContactoForm onSubmit={onContactar} disabled={loading} />
-            </div>
+            {/* Contacto: solo tras generar */}
+            {result ? (
+                <div className="mt-10 border-t pt-6">
+                    <h2 className="text-lg font-semibold">Contactar técnico comercial de obras</h2>
+                    <ContactoForm onSubmit={onContactar} disabled={loading} />
+                </div>
+            ) : null}
         </div>
     );
 }
 
-/* ---------- Componentes auxiliares básicos ---------- */
+/* ====== Subcomponentes ====== */
 
 function PresupuestoView({ result }) {
     const { budget, meta } = result || {};
-
     if (!budget) {
         return (
             <div className="text-sm text-gray-500">
@@ -176,20 +290,13 @@ function PresupuestoView({ result }) {
         );
     }
 
-    // budget.chapters => { CH: { code, name, items:[{code,desc,unit,qty,price,amount}], total } }
-    // budget.subtotal, budget.extras, budget.total
     const chapters = Object.values(budget.chapters || {});
     return (
         <div className="space-y-8">
             <div className="text-sm text-gray-600">
-                <div>
-                    <span className="font-medium">Tipo:</span> {meta?.tipo}
-                </div>
-                {meta?.ciudad ? (
-                    <div>
-                        <span className="font-medium">Ciudad:</span> {meta.ciudad}
-                    </div>
-                ) : null}
+                <div><span className="font-medium">Tipo:</span> {meta?.tipo}</div>
+                {meta?.provincia && <div><span className="font-medium">Provincia:</span> {meta.provincia}</div>}
+                {meta?.ciudad && <div><span className="font-medium">Ciudad:</span> {meta.ciudad}</div>}
             </div>
 
             {chapters.map((ch) => (
@@ -215,30 +322,21 @@ function PresupuestoView({ result }) {
                                     <td className="px-3">{it.desc}</td>
                                     <td className="px-3">{it.unit}</td>
                                     <td className="px-3 text-right">{it.qty}</td>
-                                    <td className="px-3 text-right">
-                                        {Number(it.price).toFixed(2)} €
-                                    </td>
-                                    <td className="px-3 text-right">
-                                        {Number(it.amount).toFixed(2)} €
-                                    </td>
+                                    <td className="px-3 text-right">{Number(it.price).toFixed(2)} €</td>
+                                    <td className="px-3 text-right">{Number(it.amount).toFixed(2)} €</td>
                                 </tr>
                             ))}
                         </tbody>
                         <tfoot>
                             <tr className="border-t">
-                                <td className="py-2 px-3 text-right font-medium" colSpan={5}>
-                                    Subtotal capítulo
-                                </td>
-                                <td className="px-3 text-right font-medium">
-                                    {Number(ch.total).toFixed(2)} €
-                                </td>
+                                <td className="py-2 px-3 text-right font-medium" colSpan={5}>Subtotal capítulo</td>
+                                <td className="px-3 text-right font-medium">{Number(ch.total).toFixed(2)} €</td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
             ))}
 
-            {/* Extras */}
             {Array.isArray(budget.extras) && budget.extras.length > 0 && (
                 <div className="border rounded">
                     <div className="px-4 py-3 border-b font-medium">Cargos porcentuales</div>
@@ -267,13 +365,10 @@ function PresupuestoView({ result }) {
                 </div>
             )}
 
-            {/* Totales */}
             <div className="flex justify-end">
                 <div className="text-right">
                     <div className="text-sm text-gray-500">Subtotal</div>
-                    <div className="text-lg font-semibold">
-                        {Number(budget.subtotal).toFixed(2)} €
-                    </div>
+                    <div className="text-lg font-semibold">{Number(budget.subtotal).toFixed(2)} €</div>
                     <div className="text-sm text-gray-500 mt-2">TOTAL (sin IVA)</div>
                     <div className="text-2xl font-bold">{Number(budget.total).toFixed(2)} €</div>
                 </div>
@@ -283,11 +378,10 @@ function PresupuestoView({ result }) {
 }
 
 function ContactoForm({ onSubmit, disabled }) {
-    const [tab, setTab] = useState("persona"); // 'persona' | 'empresa'
+    const [tab, setTab] = useState("persona");
     const [sending, setSending] = useState(false);
     const [ok, setOk] = useState(false);
     const [err, setErr] = useState("");
-
     const [form, setForm] = useState({
         name: "",
         phone: "",
@@ -323,16 +417,14 @@ function ContactoForm({ onSubmit, disabled }) {
                 <button
                     type="button"
                     onClick={() => setTab("persona")}
-                    className={`px-3 py-2 text-sm ${tab === "persona" ? "bg-black text-white" : "bg-white"
-                        }`}
+                    className={`px-3 py-2 text-sm ${tab === "persona" ? "bg-black text-white" : "bg-white"}`}
                 >
                     Persona
                 </button>
                 <button
                     type="button"
                     onClick={() => setTab("empresa")}
-                    className={`px-3 py-2 text-sm ${tab === "empresa" ? "bg-black text-white" : "bg-white"
-                        }`}
+                    className={`px-3 py-2 text-sm ${tab === "empresa" ? "bg-black text-white" : "bg-white"}`}
                 >
                     Empresa
                 </button>
@@ -388,7 +480,6 @@ function ContactoForm({ onSubmit, disabled }) {
                 >
                     {sending ? "Enviando…" : "Contactar técnico comercial de obras"}
                 </button>
-
                 <a
                     href="https://wa.me/34624473123"
                     target="_blank"
@@ -399,9 +490,7 @@ function ContactoForm({ onSubmit, disabled }) {
                 </a>
             </div>
 
-            {err ? (
-                <div className="text-sm text-red-600 mt-2">{err}</div>
-            ) : null}
+            {err ? <div className="text-sm text-red-600 mt-2">{err}</div> : null}
         </form>
     );
 }

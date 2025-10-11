@@ -1,0 +1,14 @@
+[
+  {
+    "nombre": "Madrid",
+    "localidades": [ "Madrid", "Alcalá de Henares", "Getafe", "Leganés", "Móstoles", "Fuenlabrada", "Pozuelo de Alarcón", "Alcorcón" ]
+  },
+  {
+    "nombre": "Barcelona",
+    "localidades": [ "Barcelona", "Hospitalet de Llobregat", "Badalona", "Sabadell", "Terrassa", "Mataró", "Granollers", "Cornellà" ]
+  },
+  {
+    "nombre": "Valencia",
+    "localidades": [ "València", "Torrent", "Gandía", "Paterna", "Sagunt", "Mislata", "Quart de Poblet", "Xirivella" ]
+  }
+]
