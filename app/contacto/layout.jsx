@@ -1,29 +1,23 @@
 // app/contacto/layout.jsx
-const siteUrl = "https://robotarq.com";
-const path = "/contacto";
-const fullUrl = `${siteUrl}${path}`;
+const SITE = "https://robotarq.com";
+const PATH = "/contacto";
+const CANON = `${SITE}${PATH}`;
 
 export const metadata = {
-    metadataBase: new URL(siteUrl),
+    metadataBase: new URL(SITE),
     title: {
-        default: "Contacto — robotARQ",
+        default: "Contacto | robotARQ",
         template: "%s | robotARQ",
     },
     description:
-        "Cuéntanos tu proyecto de reforma. Te contactaremos para revisar el presupuesto técnico y coordinar visita de obra.",
+        "Contacta con robotARQ. Resolvemos presupuestos, proyecto, licencias y obra en toda España.",
     robots: { index: true, follow: true },
-    keywords: [
-        "contacto robotARQ",
-        "empresa de reformas",
-        "presupuesto reforma",
-        "visita de obra",
-    ],
-    alternates: { canonical: fullUrl },
+    alternates: { canonical: CANON },
     openGraph: {
-        title: "Contacto — robotARQ",
+        title: "Contacto | robotARQ",
         description:
-            "Te ayudamos con presupuesto técnico, proyecto, licencia y obra.",
-        url: fullUrl,
+            "Escríbenos para presupuestos de reformas, obra nueva modular y licencias.",
+        url: CANON,
         siteName: "robotARQ",
         type: "website",
         locale: "es_ES",
@@ -31,32 +25,15 @@ export const metadata = {
     },
     twitter: {
         card: "summary_large_image",
-        title: "Contacto — robotARQ",
-        description: "Te contactaremos en breve para tu reforma.",
+        title: "Contacto | robotARQ",
+        description:
+            "Habla con nuestro técnico comercial de obras y obtén tu presupuesto con IA.",
         images: ["/og-image.jpg"],
     },
 };
 
-export default function Layout({ children }) {
-    const ld = {
-        "@context": "https://schema.org",
-        "@type": "ContactPage",
-        name: "Contacto robotARQ",
-        url: fullUrl,
-        publisher: { "@type": "Organization", name: "robotARQ", url: siteUrl },
-        contactPoint: {
-            "@type": "ContactPoint",
-            telephone: "+34 624473123",
-            contactType: "customer service",
-            areaServed: "ES",
-            availableLanguage: "Spanish",
-        },
-    };
-
-    return (
-        <>
-            {children}
-            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
-        </>
-    );
+export default function ContactLayout({ children }) {
+    // Ajusta este valor si cambias la altura del header fijo:
+    // pt-24 ≈ 96px; si tu header mide 80px usa pt-20; si 64px usa pt-16.
+    return <div className="pt-24">{children}</div>;
 }
