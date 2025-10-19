@@ -1,326 +1,270 @@
 // app/api/notify/route.js
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
-import { PDFDocument, StandardFonts, rgb, degrees } from "pdf-lib";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+/**
+ * Notificación transaccional de presupuestos
+ * - Envío al cliente (sin BCC al owner)
+ * - Envío interno al owner
+ * - HTML limpio + versión texto (mejora inbox “Principal”)
+ */
 
-/** Utilidades */
-const eur = (n) =>
-    new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(
-        Number(n || 0)
-    );
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_FROM = (process.env.RESEND_FROM || "robotARQ <hola@robotarq.com>").replace(/^"+|"+$/g, "");
 
-/** HTML responsive embebido para el email */
-function renderEmailHtml({ customer, meta, budget, aiOk }) {
-    const styles = `
-  body{margin:0;padding:0;background:#f6f6f6;font-family:Arial,Helvetica,sans-serif;}
-  .wrap{max-width:680px;margin:0 auto;padding:24px;}
-  .card{background:#ffffff;border-radius:12px;padding:20px;}
-  h1{font-size:18px;margin:0 0 10px 0;}
-  h2{font-size:16px;margin:18px 0 8px 0;}
-  p{font-size:14px;line-height:1.6;margin:6px 0;}
-  .muted{color:#666}
-  .total{font-size:20px;font-weight:700;}
-  table{width:100%;border-collapse:collapse;font-size:13px}
-  th,td{border-bottom:1px solid #eee;padding:8px;vertical-align:top}
-  th{text-align:left;background:#fafafa}
-  .footer{font-size:12px;color:#888;text-align:center;margin-top:10px}
-  .pill{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;background:#111;color:#fff}
-  @media (max-width: 600px){
-    .wrap{padding:12px}
-    .card{padding:16px}
-    table, th, td{font-size:12px}
-    .total{font-size:18px}
-  }
+function extractEmail(s) {
+    if (!s) return "";
+    const m = String(s).match(/<([^>]+)>/);
+    return m ? m[1] : String(s).trim();
+}
+
+const OWNER_EMAIL =
+    process.env.OWNER_EMAIL?.trim() ||
+    extractEmail(process.env.RESEND_OWNER) ||
+    "hola@robotarq.com";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://robotarq.com";
+
+// ---------- Helpers ----------
+function safeStr(s) {
+    if (s === null || s === undefined) return "";
+    return String(s);
+}
+
+function money(n) {
+    const v = Number(n || 0);
+    return `${v.toFixed(2)} €`;
+}
+
+function renderBudgetText(meta, budget) {
+    const parts = [];
+    parts.push("robotARQ - Presupuesto técnico");
+    if (meta?.tipo) parts.push(`Tipo: ${meta.tipo}`);
+    if (meta?.obraTipo) parts.push(`Obra: ${meta.obraTipo}`);
+    if (meta?.sistema) parts.push(`Sistema: ${meta.sistema}`);
+    if (meta?.provincia) parts.push(`Provincia: ${meta.provincia}`);
+    if (meta?.ciudad) parts.push(`Ciudad: ${meta.ciudad}`);
+    if (meta?.superficie) parts.push(`Superficie: ${meta.superficie} m²`);
+    if (meta?.prompt) {
+        parts.push("");
+        parts.push(`Descripción: ${meta.prompt}`);
+    }
+    parts.push("");
+
+    if (budget?.chapters) {
+        for (const ch of Object.values(budget.chapters)) {
+            parts.push(`== ${ch.code} — ${ch.name} ==`);
+            if (Array.isArray(ch.items)) {
+                for (const it of ch.items) {
+                    parts.push(
+                        `${it.code} | ${it.desc} | ${it.unit} | Cant: ${it.qty} | P.unit: ${Number(it.price).toFixed(
+                            2
+                        )} | Importe: ${Number(it.amount).toFixed(2)}`
+                    );
+                }
+            }
+            parts.push(`Subtotal capítulo: ${money(ch.total)}`);
+            parts.push("");
+        }
+    }
+
+    if (Array.isArray(budget?.extras) && budget.extras.length) {
+        parts.push("Cargos porcentuales:");
+        for (const e of budget.extras) {
+            parts.push(`${e.code} ${e.desc} (${e.qty}%) Base: ${money(e.price)} Importe: ${money(e.amount)}`);
+        }
+        parts.push("");
+    }
+
+    parts.push(`Subtotal: ${money(budget?.subtotal)}`);
+    parts.push(`TOTAL (sin IVA): ${money(budget?.total)}`);
+    parts.push("");
+    parts.push("robotarq.com");
+
+    return parts.join("\n");
+}
+
+function renderBudgetHTML(meta, budget) {
+    const preheader =
+        "Presupuesto generado automáticamente por robotARQ. Revisa partidas, cantidades y totales.";
+
+    const chapterBlocks = [];
+    if (budget?.chapters) {
+        for (const ch of Object.values(budget.chapters)) {
+            const rows =
+                Array.isArray(ch.items) && ch.items.length
+                    ? ch.items
+                        .map(
+                            (it) => `
+          <tr>
+            <td style="padding:8px;border-bottom:1px solid #eee;">${safeStr(it.code)}</td>
+            <td style="padding:8px;border-bottom:1px solid #eee;">${safeStr(it.desc)}</td>
+            <td style="padding:8px;border-bottom:1px solid #eee;">${safeStr(it.unit)}</td>
+            <td style="padding:8px;border-bottom:1px solid #eee;text-align:right;">${safeStr(it.qty)}</td>
+            <td style="padding:8px;border-bottom:1px solid #eee;text-align:right;">${Number(it.price).toFixed(
+                                2
+                            )} €</td>
+            <td style="padding:8px;border-bottom:1px solid #eee;text-align:right;">${Number(it.amount).toFixed(
+                                2
+                            )} €</td>
+          </tr>`
+                        )
+                        .join("")
+                    : "";
+
+            chapterBlocks.push(`
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top:20px;border:1px solid #e5e7eb;border-radius:8px;">
+          <thead>
+            <tr>
+              <th colspan="6" style="text-align:left;padding:12px 14px;border-bottom:1px solid #e5e7eb;font:600 14px system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+                ${safeStr(ch.code)} — ${safeStr(ch.name)}
+              </th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr>
+              <td colspan="5" style="padding:10px 14px;text-align:right;border-top:1px solid #e5e7eb;font:600 13px system-ui, -apple-system, Segoe UI, Roboto, sans-serif;">Subtotal capítulo</td>
+              <td style="padding:10px 14px;text-align:right;border-top:1px solid #e5e7eb;font:600 13px system-ui, -apple-system, Segoe UI, Roboto, sans-serif;">
+                ${money(ch.total)}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      `);
+        }
+    }
+
+    const metaBlock = `
+    <div style="margin-bottom:8px;font:500 14px system-ui, -apple-system, Segoe UI, Roboto, sans-serif;color:#111827;">
+      ${meta?.tipo ? `Tipo: ${safeStr(meta.tipo)}` : ""}
+      ${meta?.obraTipo ? ` · Obra: ${safeStr(meta.obraTipo)}` : ""}
+      ${meta?.sistema ? ` · Sistema: ${safeStr(meta.sistema)}` : ""}
+      ${meta?.provincia ? ` · Provincia: ${safeStr(meta.provincia)}` : ""}
+      ${meta?.ciudad ? ` · Ciudad: ${safeStr(meta.ciudad)}` : ""}
+      ${meta?.superficie ? ` · Superficie: ${safeStr(meta.superficie)} m²` : ""}
+    </div>
+    ${meta?.prompt ? `<p style="color:#374151;font:400 13px system-ui;">${safeStr(meta.prompt)}</p>` : ""}
   `;
 
-    const capsHtml = Object.values(budget?.chapters || {}).map((ch) => {
-        const rows = ch.items
-            .map(
-                (it) => `
-        <tr>
-          <td>${it.code}</td>
-          <td>${it.desc}</td>
-          <td>${it.unit}</td>
-          <td style="text-align:right">${it.qty}</td>
-          <td style="text-align:right">${eur(it.price)}</td>
-          <td style="text-align:right;font-weight:600">${eur(it.amount)}</td>
-        </tr>`
-            )
-            .join("");
-
-        return `
-      <h2>${ch.code} — ${ch.name}</h2>
-      <table role="presentation" cellspacing="0" cellpadding="0">
-        <thead>
-          <tr>
-            <th>Código</th>
-            <th>Descripción</th>
-            <th>Ud</th>
-            <th style="text-align:right">Cantidad</th>
-            <th style="text-align:right">P. unit</th>
-            <th style="text-align:right">Importe</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="5" style="text-align:right;font-weight:600;padding-top:8px">Subtotal capítulo</td>
-            <td style="text-align:right;font-weight:700;padding-top:8px">${eur(ch.total)}</td>
-          </tr>
-        </tfoot>
-      </table>
-    `;
-    });
-
-    const extrasHtml = (budget?.extras || [])
-        .map(
-            (e) => `
-      <tr>
-        <td>${e.code}</td>
-        <td>${e.desc}</td>
-        <td style="text-align:right">${e.qty}%</td>
-        <td style="text-align:right;font-weight:600">${eur(e.amount)}</td>
-      </tr>`
-        )
-        .join("");
-
-    return `
-<!doctype html>
+    return `<!doctype html>
 <html lang="es">
-<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><style>${styles}</style></head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <h1>robot<span style="font-weight:800">ARQ</span> · Presupuesto técnico</h1>
-        <span class="pill">${meta?.refId || "REF"}</span>
-      </div>
-      <p class="muted">Tipo: <strong>${meta?.tipo || "-"}</strong> · Ciudad: <strong>${meta?.ciudad || "-"}</strong></p>
-      <p style="margin-top:8px"><strong>Descripción:</strong> ${meta?.prompt || "-"}</p>
-      ${aiOk
-            ? `<p style="color:#0a7d48"><strong>IA:</strong> Interpretación automática completada.</p>`
-            : `<p style="color:#b45f06"><strong>IA:</strong> No disponible. Estimación generada con reglas internas.</p>`
-        }
-
-      ${capsHtml.join("")}
-
-      ${(budget?.extras?.length || 0) > 0
-            ? `
-      <h2>Cargos porcentuales</h2>
-      <table role="presentation" cellspacing="0" cellpadding="0">
-        <thead>
-          <tr>
-            <th>Código</th><th>Descripción</th><th style="text-align:right">%</th><th style="text-align:right">Importe</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${extrasHtml}
-        </tbody>
-      </table>`
-            : ""
-        }
-
-      <div style="text-align:right;margin-top:14px">
-        <div class="muted">Subtotal</div>
-        <div style="font-weight:600">${eur(budget?.subtotal || 0)}</div>
-        <div class="muted" style="margin-top:6px">TOTAL (sin IVA)</div>
-        <div class="total">${eur(budget?.total || 0)}</div>
-      </div>
-
-      <p class="muted" style="margin-top:12px">* Estimación orientativa. Sujeta a medición y calidades definitivas.</p>
-    </div>
-    <div class="footer">robotARQ · Presupuestos y reformas | <a href="https://robotarq.com" target="_blank">robotarq.com</a></div>
-  </div>
-</body>
-</html>
-  `.trim();
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Presupuesto técnico</title>
+  </head>
+  <body style="margin:0;background:#f9fafb;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${preheader}</div>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+      <tr>
+        <td align="center" style="padding:24px 12px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="640" style="max-width:640px;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;">
+            <tr>
+              <td style="padding:18px 20px;border-bottom:1px solid #e5e7eb">
+                <div style="font:700 16px system-ui;color:#111827;">robotARQ — Presupuesto técnico</div>
+                <div style="margin-top:2px;font:400 12px system-ui;color:#6b7280;">Generado automáticamente</div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:18px 20px">
+                ${metaBlock}
+                ${chapterBlocks.join("")}
+                <div style="margin-top:16px;font:600 14px system-ui;color:#111827;text-align:right;">
+                  Subtotal: ${money(budget?.subtotal)}<br/>
+                  <span style="font:700 18px system-ui;">TOTAL (sin IVA): ${money(budget?.total)}</span>
+                </div>
+                <div style="margin-top:18px;font:400 12px system-ui;color:#6b7280;">
+                  Documento generado por robotARQ. Más información: 
+                  <a href="${SITE_URL}" style="color:#111827;text-decoration:underline;">robotarq.com</a>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:14px 20px;border-top:1px solid #e5e7eb;text-align:center;color:#6b7280;font:400 12px system-ui;">
+                © ${new Date().getFullYear()} robotARQ
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
 }
 
-/** Construcción PDF A4 con marca de agua diagonal “robotARQ” */
-async function buildPdf({ customer, meta, budget }) {
-    const pdf = await PDFDocument.create();
-    const pageMargin = 36; // 0.5"
-    const pageWidth = 595.28; // A4 width pt
-    const pageHeight = 841.89; // A4 height pt
-    const font = await pdf.embedFont(StandardFonts.Helvetica);
-    const fontBold = await pdf.embedFont(StandardFonts.HelveticaBold);
-
-    // Helper de escritura con word-wrap y paginado
-    let page = pdf.addPage([pageWidth, pageHeight]);
-    let y = pageHeight - pageMargin;
-
-    const drawWatermark = () => {
-        page.drawText("robotARQ", {
-            x: pageWidth / 2 - 160,
-            y: pageHeight / 2,
-            size: 60,
-            font: fontBold,
-            color: rgb(0.9, 0.9, 0.95),
-            rotate: degrees(-35),
-            opacity: 0.25,
-        });
-    };
-
-    drawWatermark();
-
-    const writeLine = (txt, { bold = false, size = 11 } = {}) => {
-        const maxWidth = pageWidth - pageMargin * 2;
-        const words = String(txt).split(" ");
-        let buffer = "";
-        const out = [];
-        for (const w of words) {
-            const t = buffer ? buffer + " " + w : w;
-            const wpx = (bold ? fontBold : font).widthOfTextAtSize(t, size);
-            if (wpx > maxWidth) {
-                out.push(buffer);
-                buffer = w;
-            } else buffer = t;
-        }
-        if (buffer) out.push(buffer);
-
-        for (const l of out) {
-            if (y < pageMargin + 40) {
-                page = pdf.addPage([pageWidth, pageHeight]);
-                y = pageHeight - pageMargin;
-                drawWatermark();
-            }
-            page.drawText(l, {
-                x: pageMargin,
-                y,
-                size,
-                font: bold ? fontBold : font,
-                color: rgb(0, 0, 0),
-            });
-            y -= size + 4;
-        }
-    };
-
-    // Cabecera
-    writeLine(`robotARQ — Presupuesto técnico`, { bold: true, size: 14 });
-    writeLine(`Ref: ${meta?.refId || ""}`);
-    writeLine(`Tipo: ${meta?.tipo || "-"} · Ciudad: ${meta?.ciudad || "-"}`);
-    writeLine(`Descripción: ${meta?.prompt || "-"}`);
-    y -= 6;
-
-    // Cuerpo
-    for (const ch of Object.values(budget?.chapters || {})) {
-        writeLine(`${ch.code} — ${ch.name}`, { bold: true, size: 12 });
-        writeLine(`COD | DESCRIPCIÓN | UD | CANT. | P.UNIT | IMPORTE`, {
-            bold: true,
-            size: 10,
-        });
-        for (const it of ch.items) {
-            writeLine(
-                `${it.code} | ${it.desc} | ${it.unit} | ${it.qty} | ${eur(
-                    it.price
-                )} | ${eur(it.amount)}`,
-                { size: 10 }
-            );
-        }
-        writeLine(`Subtotal capítulo: ${eur(ch.total)}`, { bold: true, size: 10 });
-        y -= 4;
-    }
-
-    if (budget?.extras?.length) {
-        writeLine(`Cargos porcentuales`, { bold: true, size: 12 });
-        writeLine(`COD | DESCRIPCIÓN | % | IMPORTE`, { bold: true, size: 10 });
-        for (const e of budget.extras) {
-            writeLine(`${e.code} | ${e.desc} | ${e.qty}% | ${eur(e.amount)}`, {
-                size: 10,
-            });
-        }
-        y -= 4;
-    }
-
-    writeLine(`Subtotal: ${eur(budget?.subtotal || 0)}`, { bold: true, size: 12 });
-    writeLine(`TOTAL (sin IVA): ${eur(budget?.total || 0)}`, {
-        bold: true,
-        size: 13,
-    });
-    writeLine(
-        `* Estimación orientativa. Sujeta a medición y calidades definitivas.`,
-        { size: 9 }
-    );
-
-    const bytes = await pdf.save();
-    return Buffer.from(bytes);
-}
-
-/** Subject helper */
-const subjectLine = (meta, who = "Cliente") =>
-    `robotARQ · Presupuesto ${meta?.tipo || "reforma"} · ${meta?.ciudad || ""} · Ref ${meta?.refId || ""} (${who})`;
-
-/** Handler */
+// ---------- Handler ----------
 export async function POST(req) {
     try {
-        const { customer, meta, budget, aiOk } = await req.json();
-
-        const resendKey = process.env.RESEND_API_KEY;
-        const from = process.env.RESEND_FROM; // "robotARQ <hola@robotarq.com>"
-        const owner = process.env.RESEND_OWNER; // correo interno
-
-        if (!resendKey || !from || !owner) {
-            console.error("[/api/notify] Falta configuración:", {
-                hasResendKey: !!resendKey,
-                hasFrom: !!from,
-                hasOwner: !!owner,
-            });
-            return NextResponse.json(
-                { ok: false, error: "Falta configuración de correo." },
-                { status: 200 }
-            );
+        if (!RESEND_API_KEY) {
+            return NextResponse.json({ ok: false, error: "Falta RESEND_API_KEY" }, { status: 500 });
         }
 
-        const resend = new Resend(resendKey);
-        const html = renderEmailHtml({ customer, meta, budget, aiOk });
-        const pdfBuffer = await buildPdf({ customer, meta, budget });
+        const resend = new Resend(RESEND_API_KEY);
+        const body = await req.json().catch(() => ({}));
 
-        // Al cliente (si hay email), con CC al owner
-        const toCustomer = String(customer?.email || "").trim();
-        if (toCustomer) {
-            await resend.emails.send({
-                from,
-                to: toCustomer,
-                cc: owner,
-                subject: subjectLine(meta, "Cliente"),
-                html,
-                attachments: [
-                    {
-                        filename: `robotARQ_${meta?.refId || "presupuesto"}.pdf`,
-                        content: pdfBuffer.toString("base64"),
-                        contentType: "application/pdf",
-                    },
-                ],
-            });
+        const { name, phone, email, empresa, nif, budget, meta } = body || {};
+        const customerEmail = safeStr(email).trim();
+
+        if (!customerEmail) {
+            return NextResponse.json({ ok: false, error: "Falta email de cliente." }, { status: 400 });
         }
 
-        // Interno (siempre)
+        const ref = (Date.now() + "").slice(-6);
+        const subject = `Tu presupuesto — robotARQ #${ref}`;
+
+        const textBody = renderBudgetText(meta || {}, budget || {});
+        const htmlBody = renderBudgetHTML(meta || {}, budget || {});
+
+        // 1) Envío al CLIENTE — SIN BCC
         await resend.emails.send({
-            from,
-            to: owner,
-            subject: subjectLine(meta, "Interno"),
-            html,
-            attachments: [
-                {
-                    filename: `robotARQ_${meta?.refId || "presupuesto"}.pdf`,
-                    content: pdfBuffer.toString("base64"),
-                    contentType: "application/pdf",
-                },
-            ],
+            from: RESEND_FROM,
+            to: [customerEmail],
+            subject,
+            html: htmlBody,
+            text: textBody,
+            reply_to: OWNER_EMAIL || undefined,
         });
 
-        return NextResponse.json({ ok: true });
+        // 2) Envío INTERNO al OWNER
+        const internalSubject = `robotARQ — Nueva solicitud #${ref}`;
+        const internalText = [
+            `Nombre: ${safeStr(name)}`,
+            `Teléfono: ${safeStr(phone)}`,
+            `Email: ${safeStr(email)}`,
+            empresa ? `Empresa: ${safeStr(empresa)}` : "",
+            nif ? `NIF: ${safeStr(nif)}` : "",
+            "",
+            textBody,
+        ]
+            .filter(Boolean)
+            .join("\n");
+
+        const internalHTML = `
+      <!doctype html>
+      <html lang="es"><body style="font:14px system-ui;color:#111827;">
+        <h2>Nueva solicitud #${ref}</h2>
+        <p><strong>Nombre:</strong> ${safeStr(name)}<br/>
+        <strong>Teléfono:</strong> ${safeStr(phone)}<br/>
+        <strong>Email:</strong> ${safeStr(email)}<br/>
+        ${empresa ? `<strong>Empresa:</strong> ${safeStr(empresa)}<br/>` : ""}
+        ${nif ? `<strong>NIF:</strong> ${safeStr(nif)}<br/>` : ""}
+        </p>
+        ${renderBudgetHTML(meta || {}, budget || {})}
+      </body></html>
+    `;
+
+        await resend.emails.send({
+            from: RESEND_FROM,
+            to: [OWNER_EMAIL],
+            subject: internalSubject,
+            html: internalHTML,
+            text: internalText,
+        });
+
+        return NextResponse.json({ ok: true, ref });
     } catch (err) {
-        console.error("[/api/notify] Error:", err);
-        return NextResponse.json(
-            { ok: false, error: String(err?.message || err) },
-            { status: 200 }
-        );
+        console.error("[/api/notify] error:", err);
+        return NextResponse.json({ ok: false, error: String(err?.message || err) }, { status: 200 });
     }
 }
-

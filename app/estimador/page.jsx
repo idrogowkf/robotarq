@@ -1,29 +1,29 @@
 // app/estimador/page.jsx
-export const dynamic = "force-dynamic";
-
 import EstimadorClient from "./EstimadorClient";
 
 export const metadata = {
-    title: "Presupuesto técnico — robotARQ",
-    description:
-        "Describe tu reforma y genera un presupuesto técnico con partidas, cantidades y precios. Proyecto, licencia y obra.",
+    title: "Presupuesto técnico | robotARQ",
+    description: "Genera un presupuesto técnico con partidas y cantidades.",
 };
 
-export default function Page({ searchParams }) {
-    const initTipo = (searchParams?.tipo ?? "local").toString();
+export default async function Page({ searchParams }) {
+    const sp = await searchParams; // Next 15: hay que await
+    const initTipo = (sp?.tipo ?? "local").toString();
     const initPrompt = (
-        searchParams?.prompt ??
+        sp?.prompt ??
         "Reforma integral de local de 100 m²: pavimento porcelánico, pintura, 10 tomas, 10 puntos de luz y cambio de cuadro eléctrico."
     ).toString();
-    const initCiudad = (searchParams?.ciudad ?? "").toString();
+    const initCiudad = (sp?.ciudad ?? "").toString();
 
     return (
-        <div className="pt-24 pb-16"> {/* evita solape bajo header fijo */}
-            <EstimadorClient
-                initTipo={initTipo}
-                initPrompt={initPrompt}
-                initCiudad={initCiudad}
-            />
+        <div className="pt-24 pb-16">
+            <div className="max-w-6xl mx-auto px-4">
+                <EstimadorClient
+                    initTipo={initTipo}
+                    initPrompt={initPrompt}
+                    initCiudad={initCiudad}
+                />
+            </div>
         </div>
     );
 }
