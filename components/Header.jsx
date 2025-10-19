@@ -1,49 +1,33 @@
 ﻿// components/Header.jsx
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useMemo } from "react";
-
-const NAV = [
-    { href: "/estimador", label: "Generar presupuesto" },
-    { href: "/contacto", label: "Contacto" },
-];
+const HOME = "/";
 
 export default function Header() {
-    const pathname = usePathname();
-    const isActive = useMemo(() => {
-        return (href) =>
-            href === "/"
-                ? pathname === "/"
-                : pathname === href || pathname?.startsWith(href + "/");
-    }, [pathname]);
+  const goHome = (e) => {
+    // fuerza navegación absoluta al home (evita rarezas del router)
+    e.preventDefault();
+    window.location.assign(HOME);
+  };
 
-    return (
-        <header className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur border-b border-neutral-200">
-            <div className="mx-auto max-w-[1140px] px-4 h-14 flex items-center justify-between">
-                {/* Logo → Home */}
-                <Link href="/" prefetch aria-label="Inicio" className="font-extrabold tracking-tight text-xl">
-                    robot<span className="font-extrabold">ARQ</span>
-                </Link>
+  return (
+    <header className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur border-b">
+      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+        {/* Logo → SIEMPRE al home "/" */}
+        <a
+          href={HOME}
+          onClick={goHome}
+          aria-label="robotARQ — inicio"
+          className="font-extrabold text-xl tracking-tight"
+        >
+          robot<span className="font-extrabold">ARQ</span>
+        </a>
 
-                <nav className="flex items-center gap-2">
-                    {NAV.map((item) => (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            prefetch
-                            className={`px-3 py-1.5 rounded-md text-sm font-medium transition
-                ${isActive(item.href)
-                                    ? "bg-black text-white"
-                                    : "text-neutral-800 hover:bg-neutral-100"
-                                }`}
-                        >
-                            {item.label}
-                        </Link>
-                    ))}
-                </nav>
-            </div>
-        </header>
-    );
+        <nav className="flex items-center gap-5 text-sm">
+          <a href="/estimador" className="hover:underline">Generar presupuesto</a>
+          <a href="/contacto" className="hover:underline">Contacto</a>
+        </nav>
+      </div>
+    </header>
+  );
 }

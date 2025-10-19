@@ -1,40 +1,36 @@
 // app/estimador/page.jsx
-export const dynamic = "force-dynamic";
-
-import { Suspense } from "react";
 import EstimadorClient from "./EstimadorClient";
 
-function EstimadorPageInner({ searchParams }) {
-    const initTipo = ((searchParams?.tipo ?? "local") + "").toString();
-    const initPrompt =
-        (
-            searchParams?.prompt ??
-            "Describe tu reforma u obra nueva con detalles (m², estancias, calidades…)"
-        ) + "";
-    const initCiudad = ((searchParams?.ciudad ?? "") + "").toString();
+export const dynamic = "force-dynamic";
+
+export default async function Page(props) {
+    const sp = await props.searchParams;
+
+    const initTipo = ((sp?.tipo ?? "local") + "").toString();
+    const initPrompt = (
+        (sp?.prompt ??
+            "Describe tu reforma u obra nueva con detalles (m², estancias, calidades…).") + ""
+    ).toString();
+    const initCiudad = ((sp?.ciudad ?? "") + "").toString();
 
     return (
         <div className="pt-24 pb-16">
             <div className="max-w-6xl mx-auto px-4">
-                <h1 className="text-3xl sm:text-4xl font-extrabold">Presupuesto técnico</h1>
-                <p className="text-slate-600 mt-2">
-                    Reformas u obra nueva (in situ o modular). Partidas, cantidades y precios orientativos.
+                <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+                    Presupuesto técnico
+                </h1>
+                <p className="text-neutral-600 mt-2">
+                    Describe tu reforma u obra nueva y genera un presupuesto con partidas, mediciones y precios.
                 </p>
-                <EstimadorClient
-                    initTipo={initTipo}
-                    initPrompt={initPrompt}
-                    initCiudad={initCiudad}
-                />
+
+                <div className="mt-8">
+                    <EstimadorClient
+                        initTipo={initTipo}
+                        initPrompt={initPrompt}
+                        initCiudad={initCiudad}
+                    />
+                </div>
             </div>
         </div>
-    );
-}
-
-export default function Page(props) {
-    return (
-        <Suspense fallback={<div className="pt-24 pb-16 px-4">Cargando…</div>}>
-            {/* @ts-expect-error Async searchParams in App Router */}
-            <EstimadorPageInner {...props} />
-        </Suspense>
     );
 }

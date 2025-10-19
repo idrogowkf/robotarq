@@ -1,15 +1,12 @@
-﻿// next.config.mjs
-/** @type {import('next').NextConfig} */
+﻿/** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    optimizePackageImports: ["react", "react-dom"],
-  },
-  async redirects() {
-    return [
-      // ⚠️ Nada desde "/" a "/reformas-bares".
-      // Añade aquí otras redirecciones si quieres, pero nunca la raíz.
-    ];
-  },
+    experimental: {
+        optimizePackageImports: ["react", "react-dom"],
+    },
+    // Sin redirecciones al antiguo /reformas-bares
+    async redirects() {
+        return [];
+    },
 };
 
 export default nextConfig;

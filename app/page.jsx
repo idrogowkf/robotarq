@@ -1,24 +1,24 @@
-﻿/// app/page.jsx — Server Component (sin "use client")
+﻿// app/page.jsx — Server Component
 export const dynamic = "force-static";
 
 export const metadata = {
-    title: "robotARQ — Reformas y Obra Nueva | Genera tu Presupuesto Técnico",
+    title: "robotARQ — Reformas | Genera tu Presupuesto Técnico",
     description:
-        "Somos tu empresa de reformas y obra nueva. Describe lo que necesitas y generamos un presupuesto técnico con partidas, cantidades y precios.",
+        "Describe tu reforma y generamos un presupuesto técnico con partidas, cantidades y precios.",
     robots: "index, follow",
     alternates: { canonical: "/" },
 };
 
 const PHONE = "+34624473123";
 const WA = `https://wa.me/34624473123?text=${encodeURIComponent(
-    "Hola, quiero un presupuesto con robotARQ."
+    "Hola, quiero un presupuesto para reformar mi bar/local."
 )}`;
 
 function Section({ children, className = "" }) {
     return <section className={`max-w-[1140px] mx-auto px-4 ${className}`}>{children}</section>;
 }
 
-export default function LandingRobotARQ() {
+export default function LandingHome() {
     return (
         <main className="bg-white text-[#0a0a0a]">
             {/* ===== HERO ===== */}
@@ -30,20 +30,20 @@ export default function LandingRobotARQ() {
 
                 {/* Subtítulo */}
                 <p className="mt-4 text-lg sm:text-xl text-neutral-700 max-w-3xl">
-                    Somos tu empresa de reformas y obra nueva. Describe lo que necesitas y te devolvemos un{" "}
+                    Somos tu empresa de reformas. Describe lo que necesitas y te devolvemos un{" "}
                     <strong>presupuesto técnico</strong> con partidas, cantidades y precios.
                 </p>
 
-                {/* ==== PROMPT MINIMAL: Ámbito + Descripción + CTA ==== */}
+                {/* Formulario -> /estimador (bloque minimal y protagonista) */}
                 <div className="mt-8">
                     <form
                         action="/estimador"
                         method="GET"
                         className="rounded-2xl border border-neutral-200 p-5 shadow-sm bg-white"
                     >
-                        <div className="grid gap-3">
-                            <div className="w-full sm:w-80">
-                                <label className="text-sm text-neutral-600">Ámbito</label>
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                            <div className="w-full sm:w-64">
+                                <label className="text-sm text-neutral-600">Tipo de reforma</label>
                                 <select
                                     name="tipo"
                                     defaultValue="hosteleria"
@@ -53,37 +53,32 @@ export default function LandingRobotARQ() {
                                     <option value="local">Local comercial</option>
                                     <option value="vivienda">Vivienda</option>
                                     <option value="oficina">Oficina</option>
-                                    <option value="modular">Modular (obra nueva)</option>
                                 </select>
                             </div>
 
-                            <div>
-                                <label className="text-sm text-neutral-600">Describe tu reforma / obra</label>
-                                <textarea
+                            <div className="flex-1">
+                                <label className="text-sm text-neutral-600">Describe tu reforma</label>
+                                <input
                                     name="prompt"
                                     required
-                                    rows={4}
-                                    placeholder="Ej.: Reforma de 120 m² con pavimento porcelánico, pintura e iluminación LED."
+                                    placeholder="Ej.: Reforma integral de bar de 120 m²: nueva barra, pavimento, iluminación, acústica…"
                                     className="mt-1 w-full rounded-xl border border-neutral-300 px-4 py-4 outline-none focus:ring-2 focus:ring-black/10 text-base"
                                 />
-                                <p className="text-xs text-neutral-500 mt-1">
-                                    Añade unidades si quieres (p. ej., “alicatado 60 m²”, “10 tomas”, “cambio de cuadro eléctrico”).
-                                </p>
                             </div>
-
-                            <div className="pt-1">
-                                <button
-                                    type="submit"
-                                    className="inline-flex items-center justify-center rounded-xl bg-black text-white px-6 py-3.5 font-semibold hover:bg-black/90"
-                                >
-                                    Generar presupuesto ahora
-                                </button>
-                            </div>
-
-                            <p className="text-xs text-neutral-500">
-                                Los detalles (ciudad, calidades, modular/in situ…) los completarás en el estimador.
-                            </p>
                         </div>
+
+                        <div className="mt-4">
+                            <button
+                                type="submit"
+                                className="inline-flex items-center justify-center rounded-xl bg-black text-white px-6 py-3.5 font-semibold hover:bg-black/90"
+                            >
+                                Generar presupuesto ahora
+                            </button>
+                        </div>
+
+                        <p className="mt-3 text-sm text-neutral-500">
+                            Describe tu reforma · partidas · cantidades · precios.
+                        </p>
                     </form>
                 </div>
             </Section>
@@ -120,7 +115,7 @@ export default function LandingRobotARQ() {
                             { t: "Presupuesto técnico", d: "Partidas, cantidades y precios claros." },
                             { t: "Proyecto y licencias", d: "Cumplimiento normativo desde el inicio." },
                             { t: "Obra ágil", d: "Planificación por hitos y entregas limpias." },
-                            { t: "PDF / Excel", d: "Descarga e integración en tus procesos." },
+                            { t: "Seguimiento", d: "Transparencia y comunicación continua." },
                         ].map((b, i) => (
                             <div key={i} className="border rounded-2xl p-5 shadow-sm bg-white">
                                 <div className="font-semibold">{b.t}</div>
@@ -135,7 +130,7 @@ export default function LandingRobotARQ() {
             <Section className="pb-12">
                 <h2 className="text-2xl sm:text-3xl font-bold">Ejemplos de precios</h2>
                 <p className="text-neutral-600 mt-1">
-                    Importes orientativos sin IVA. La estimación detallará las partidas y cantidades.
+                    Importes orientativos sin IVA. La estimación detallará partidas y cantidades.
                 </p>
 
                 <div className="grid md:grid-cols-3 gap-4 mt-6">
@@ -168,32 +163,14 @@ export default function LandingRobotARQ() {
                 </div>
             </Section>
 
-            {/* ===== Construcción modular (bloque informativo corto) ===== */}
-            <Section className="pb-12">
-                <h2 className="text-2xl sm:text-3xl font-bold">Construcción Modular</h2>
-                <p className="text-neutral-700 mt-2">
-                    Elige entre <strong>madera</strong>, <strong>hormigón</strong>, <strong>steel frame</strong> o <strong>PVC</strong>.
-                    Completa los detalles en el estimador para ajustar calidades (€/m²), transporte y montaje.
-                </p>
-            </Section>
-
             {/* ===== Testimonios ===== */}
             <Section className="pb-12">
                 <h2 className="text-2xl sm:text-3xl font-bold">Testimonios</h2>
                 <div className="grid md:grid-cols-3 gap-4 mt-4">
                     {[
-                        {
-                            q: "Nos entregaron el bar listo para abrir, con licencias y sin sorpresas.",
-                            w: "Laura S. — Madrid",
-                        },
-                        {
-                            q: "Obra exprés de barra y cocina, abrimos en 2 semanas.",
-                            w: "Dani R. — Barcelona",
-                        },
-                        {
-                            q: "Insonorización y salida de humos resueltas sin parar el negocio.",
-                            w: "María F. — Valencia",
-                        },
+                        { q: "Nos entregaron el bar listo para abrir, con licencias y sin sorpresas.", w: "Laura S. — Madrid" },
+                        { q: "Obra exprés de barra y cocina, abrimos en 2 semanas.", w: "Dani R. — Barcelona" },
+                        { q: "Insonorización y salida de humos resueltas sin parar el negocio.", w: "María F. — Valencia" },
                     ].map((t, i) => (
                         <div key={i} className="border rounded-2xl shadow-sm p-6 bg-white">
                             <p className="italic">“{t.q}”</p>
@@ -243,7 +220,7 @@ export default function LandingRobotARQ() {
                 </div>
             </Section>
 
-            {/* ===== FABs (fijos en la esquina) ===== */}
+            {/* ===== FABs (fijos) ===== */}
             <div className="fixed right-4 bottom-4 flex flex-col gap-2 z-40">
                 <a
                     href={WA}
@@ -260,4 +237,3 @@ export default function LandingRobotARQ() {
         </main>
     );
 }
-
