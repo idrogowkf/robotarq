@@ -6,8 +6,8 @@ const nextConfig = {
   },
   async redirects() {
     return [
-      // Home → landing principal
-      { source: "/", destination: "/reformas-bares", permanent: true },
+      // ⚠️ Nada desde "/" a "/reformas-bares".
+      // Añade aquí otras redirecciones si quieres, pero nunca la raíz.
     ];
   },
 };

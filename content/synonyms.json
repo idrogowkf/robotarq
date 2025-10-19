@@ -1,0 +1,45 @@
+{
+  "actions": {
+    "install": [ "poner", "instalar", "colocar", "pegar", "montar", "colocacion", "colocación", "instalación", "alicatar", "alicatado" ],
+    "remove": [ "quitar", "retirar", "demoler", "demolición", "demolicion", "levantar", "picar" ]
+  },
+  "materials": {
+    "ceramic_floor": [ "cerámica", "ceramica", "gres", "gres porcelanico", "porcelánico", "porcelanico", "baldosa", "baldosas", "pavimento" ],
+    "ceramic_wall": [ "azulejo", "azulejos", "alicatado", "revestimiento cerámico", "revestimiento ceramico" ],
+    "paint": [ "pintura", "pintar", "plastico", "plástico", "temple", "acrílica", "acrilica" ]
+  },
+  "surfaces": {
+    "wall": [ "pared", "paredes", "tabique", "tabiques", "paramento vertical" ],
+    "floor": [ "suelo", "piso", "solado", "pavimento" ]
+  },
+  "electric": {
+    "points": [ "puntos de luz", "puntos luz", "puntos de iluminacion", "puntos iluminación", "puntos eléctricos", "enchufes", "tomas" ],
+    "board": [ "cuadro electrico", "cuadro eléctrico", "cambio de cuadro", "renovar cuadro", "boletin", "boletín" ]
+  },
+  "plumbing": {
+    "generic": [ "fontaneria", "fontanería", "tuberias", "tuberías", "desagües", "desagues", "llaves de paso", "sanitarios" ]
+  },
+  "modular": {
+    "keywords": [ "modular", "prefabricado", "industrializado" ],
+    "types": {
+      "madera": [ "madera", "CLT", "cross laminated timber", "panel contralaminado" ],
+      "hormigon": [ "hormigon", "hormigón", "prefab hormigon", "prefabricado de hormigón" ],
+      "steel": [ "steel frame", "acero", "ligero de acero", "estructura metálica ligera" ],
+      "pvc": [ "pvc", "sintético", "composite", "polímero" ]
+    }
+  },
+  "units": {
+    "m2": [ "m2", "m²", "metros cuadrados", "metros2", "mtrs2" ],
+    "units": [ "ud", "unidad", "unidades", "uds", "puntos", "punto" ]
+  },
+  "defaults": {
+    "area_m2_if_missing": 30,
+    "obra_nueva_min_m2": 50
+  },
+  "chapters_required_by_action": {
+    "ceramic_install": [ "RV", "DM", "RS" ],
+    "paint": [ "PT" ],
+    "electric_points": [ "IN" ],
+    "electric_board": [ "IN" ]
+  }
+}

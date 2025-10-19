@@ -1,34 +1,35 @@
-﻿export default function Footer() {
+﻿// components/Footer.jsx
+import Link from "next/link";
+
+export default function Footer() {
     return (
-        <footer className="bg-neutral-950 text-neutral-300 text-sm py-10 mt-24">
-            <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-6">
+        <footer className="border-t border-neutral-200 mt-12">
+            <div className="mx-auto max-w-[1140px] px-4 py-8 grid sm:grid-cols-3 gap-6 text-sm">
                 <div>
-                    <h3 className="font-semibold text-white mb-3">robotARQ</h3>
-                    <p className="text-neutral-400 leading-relaxed">
-                        Reformas con Inteligencia Artificial. Calcula tu presupuesto técnico con partidas y precios en toda España.
+                    <div className="font-bold">robotARQ</div>
+                    <p className="text-neutral-600 mt-2">
+                        Presupuestos técnicos con IA. Proyecto, licencias y obra.
                     </p>
                 </div>
+
                 <div>
-                    <h4 className="font-semibold text-white mb-3">Servicios</h4>
-                    <ul className="space-y-1">
-                        <li><a href="/reformas-bares" className="hover:text-white">Reformas de Bares</a></li>
-                        <li><a href="/reformas-locales" className="hover:text-white">Reformas de Locales</a></li>
-                        <li><a href="/reformas-viviendas" className="hover:text-white">Reformas de Viviendas</a></li>
-                        <li><a href="/reformas-hosteleria" className="hover:text-white">Reformas de Hostelería</a></li>
+                    <div className="font-semibold">Enlaces</div>
+                    <ul className="mt-2 space-y-1">
+                        <li><Link href="/" className="hover:underline">Inicio</Link></li>
+                        <li><Link href="/estimador" className="hover:underline">Generar presupuesto</Link></li>
+                        <li><Link href="/contacto" className="hover:underline">Contacto</Link></li>
                     </ul>
                 </div>
+
                 <div>
-                    <h4 className="font-semibold text-white mb-3">Contacto</h4>
-                    <p>
-                        <a href="mailto:hola@robotarq.com" className="hover:text-white">hola@robotarq.com</a><br />
-                        <a href="https://wa.me/34624473123" className="hover:text-white">+34 624 473 123</a>
-                    </p>
-                    <p className="mt-3">Madrid, España</p>
+                    <div className="font-semibold">Contacto</div>
+                    <ul className="mt-2 space-y-1">
+                        <li><a href="mailto:hola@robotarq.com" className="hover:underline">hola@robotarq.com</a></li>
+                        <li><a href="https://wa.me/34624473123" className="hover:underline" target="_blank" rel="noreferrer">WhatsApp: +34 624473123</a></li>
+                    </ul>
                 </div>
             </div>
-            <div className="text-center text-neutral-500 mt-10 border-t border-neutral-800 pt-5">
-                © {new Date().getFullYear()} robotARQ · Todos los derechos reservados
-            </div>
+            <div className="text-center text-xs text-neutral-500 pb-6">© {new Date().getFullYear()} robotARQ</div>
         </footer>
     );
 }
