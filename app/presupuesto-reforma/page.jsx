@@ -1,3 +1,4 @@
+import Link from 'next/link';
 export const metadata = {
  title: 'Cómo calcular y comparar un presupuesto de reforma',
  description: 'Prepara mediciones, calcula partidas y compara presupuestos de reforma. Ejemplo desglosado, PDF y Excel, exclusiones y revisión técnica.',
@@ -14,7 +15,7 @@ export default function Page(){
  const breadcrumb={'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[{'@type':'ListItem',position:1,name:'Inicio',item:'https://robotarq.com/'},{'@type':'ListItem',position:2,name:'Presupuesto de reforma',item:'https://robotarq.com/presupuesto-reforma'}]};
  return <article className="max-w-3xl mx-auto px-4 pt-28 pb-16">
  <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(breadcrumb)}} />
- <nav aria-label="Ruta de navegación"><a href="/" className="underline">Inicio</a> / Presupuesto de reforma</nav>
+ <nav aria-label="Ruta de navegación"><Link href="/" className="underline">Inicio</Link> / Presupuesto de reforma</nav>
  <h1 className="text-4xl font-bold mt-6">Cómo calcular un presupuesto de reforma por partidas</h1>
  <p className="mt-4">Si buscas un presupuesto de reforma online, empieza por definir qué trabajos necesitas. robotARQ permite estimar pintura, cerámica y electricidad básica con cantidades explícitas y descargar el resultado en PDF y Excel.</p>
  <p className="mt-3 text-sm">Revisión: 9 de octubre de 2026 · Equipo robotARQ · Guía del estimador piloto.</p>
