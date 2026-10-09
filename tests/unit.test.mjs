@@ -75,3 +75,19 @@ test('a simple measured item remains deterministic even when it mentions a home'
  let assisted=false;const r=await estimateRequest({prompt:'Pintar 20 m2 en vivienda'},{generate:async()=>{assisted=true;return {};}});
  assert.equal(r.ok,true);assert.equal(r.meta.source,'reference-catalog');assert.equal(r.budget.chapters.PT.items[0].qty,20);assert.equal(assisted,false);
 });
+test('project budgets over the shared 200-row document limit are rejected',async()=>{
+ const chapters={};for(let c=0;c<4;c++)chapters['C'+c]={name:'Capítulo '+c,items:Array.from({length:60},(_,i)=>({code:`C${c}-${i}`,desc:'Partida',unit:'ud',qty:1,price:10}))};
+ const r=await estimateRequest({prompt:'Vivienda prefabricada de hormigón de 60 m2'},{generate:async()=>({chapters})});assert.equal(r.ok,false);
+});
+test('integral refurbishment fallback does not invent a prefabricated concrete system',async()=>{
+ const r=await estimateRequest({prompt:'Reforma integral de vivienda de 60 m2'},{generate:async()=>{throw new Error('offline')},fallbackOnInvalid:true});
+ assert.equal(r.ok,true);const descriptions=Object.values(r.budget.chapters).flatMap(c=>c.items.map(i=>i.desc)).join(' ');assert.doesNotMatch(descriptions,/prefabricado/i);assert.match(descriptions,/reforma|instalaciones/i);
+});
+test('multiple areas require clarification instead of using the first number',async()=>{
+ let assisted=false;const r=await estimateRequest({prompt:'Reforma integral: pintar 20 m2 en vivienda de 60 m2'},{generate:async()=>{assisted=true;return {};},fallbackOnInvalid:true});
+ assert.equal(r.ok,false);assert.equal(assisted,false);assert.match(r.questions.join(' '),/superficie total/i);
+});
+test('timed-out assistance receives an abort signal',async()=>{
+ let aborted=false;const generate=({signal})=>new Promise((_,reject)=>signal.addEventListener('abort',()=>{aborted=true;reject(new Error('aborted'));},{once:true}));
+ const r=await estimateRequest({prompt:'Vivienda prefabricada de hormigón de 60 m2'},{generate,fallbackOnInvalid:true,generateTimeoutMs:10});assert.equal(r.ok,true);assert.equal(aborted,true);
+});
