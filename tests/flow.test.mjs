@@ -7,8 +7,8 @@ async function post(path,data){return fetch(base+path,{method:'POST',headers:{'C
 test('vague request asks for measurements without a fabricated total',async()=>{
  const r=await post('/api/estimate',{prompt:'Quiero reformar'});assert.equal(r.status,422);const d=await r.json();assert.ok(d.questions.length);assert.equal(d.budget,undefined);
 });
-test('new build cannot be returned as a partial refurbishment budget',async()=>{
- const r=await post('/api/estimate',{obra:'obra_nueva',m2:120,prompt:'Casa de 120 m²'});assert.equal(r.status,422);
+test('new build returns a clearly marked preliminary project budget',async()=>{
+ const r=await post('/api/estimate',{obra:'obra_nueva',m2:120,prompt:'Casa de 120 m²'});assert.equal(r.status,200);const d=await r.json();assert.equal(d.ok,true);assert.equal(d.meta.scope,'project-preliminary');assert.ok(d.budget.total>0);
 });
 test('unmeasured ceiling painting cannot borrow tile area',async()=>{
  const r=await post('/api/estimate',{prompt:'Alicatar 60 m² y pintar techos'});assert.equal(r.status,422);

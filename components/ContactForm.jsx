@@ -1,7 +1,7 @@
 "use client";
 import { useState } from 'react';
 import { track } from '@vercel/analytics';
-export default function ContactForm({budget,initialMessage=''}){
+export default function ContactForm({budget,initialMessage='',submitLabel='Enviar solicitud'}){
  const [busy,setBusy]=useState(false),[status,setStatus]=useState(''),[ok,setOk]=useState(false);
  async function submit(e){e.preventDefault();const form=e.currentTarget;const f=new FormData(form);setBusy(true);setStatus('');track('contact_start');
   try{const payload=Object.fromEntries(f);payload.privacy=f.get('privacy')==='on';payload.budget=budget||null;
@@ -14,7 +14,7 @@ export default function ContactForm({budget,initialMessage=''}){
   <div className="hidden" aria-hidden="true"><label>Sitio web<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
   <label className="flex gap-2 items-start text-sm"><input type="checkbox" name="privacy" required className="mt-1" /><span>He leído la <a className="underline" href="/privacidad" target="_blank" rel="noreferrer">información de privacidad</a>. Envío estos datos para recibir respuesta a mi solicitud.</span></label>
   <p className="text-sm text-gray-600">Tu solicitud se remite al equipo de RobotARQ. No se envían copias automáticas ni mensajes comerciales a la dirección indicada.</p>
-  <button disabled={busy} className="bg-black text-white px-5 py-3 rounded">{busy?'Enviando…':'Enviar solicitud'}</button>
+  <button disabled={busy} className="bg-black text-white px-5 py-3 rounded">{busy?'Enviando…':submitLabel}</button>
   {status&&<p role="alert" className="text-red-700">{status}</p>}
   <p className="text-sm">Contacto directo: <a href="mailto:hola@robotarq.com" className="underline">hola@robotarq.com</a> · <a href="tel:+34624473123" className="underline">+34 624 473 123</a></p>
  </form>;
