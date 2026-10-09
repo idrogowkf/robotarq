@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { interpretProject, validateEstimate } from '../lib/ai-estimator.mjs';
+import { createCase, createMemoryCaseStore, getCase, verifyDownloadGrant, sealEstimate, anonymizeCase } from '../lib/cases.mjs';
+import { professionalPdf, professionalWorkbook } from '../lib/documents.mjs';
+import { PDFDocument } from 'pdf-lib';
+import ExcelJS from 'exceljs';
+import { createAdminSession, verifyAdminSession, verifyAdminPassword, filterCases, casesCsv } from '../lib/admin-auth.mjs';
 
 const rawEstimate={
  project:{title:'Vivienda unifamiliar aislada',summary:'Chalet de una planta y 60 metros cuadrados.',projectType:'obra nueva',location:'Madrid',areaM2:60,quality:'media'},
@@ -38,4 +43,48 @@ test('estimate validation rejects unsupported units and excessive rows',()=>{
  assert.throws(()=>validateEstimate({chapters:{A:{name:'A',items:[{desc:'x',unit:'kg',qty:1,price:1}]}}},{}),/unidad/i);
  const chapters={};for(let c=0;c<5;c++)chapters[c]={name:'C',items:Array.from({length:50},(_,i)=>({desc:`P${i}`,unit:'ud',qty:1,price:1}))};
  assert.throws(()=>validateEstimate({chapters},{}),/partidas/i);
+});
+
+test('case creation requires a signed unchanged estimate and stores client intent',async()=>{
+ const store=createMemoryCaseStore(),estimate=await interpretProject({prompt:'Chalet de 60 metros cuadrados'},{generate:async()=>rawEstimate});
+ const estimateToken=sealEstimate(estimate,'test-secret');
+ const created=await createCase({client:{name:'Ana Pérez',email:'ana@example.com',phone:'600123123'},intent:'assistance',privacy:true,estimate,estimateToken},{store,secret:'test-secret',notify:async()=>({ok:true})});
+ assert.match(created.id,/^[0-9a-f-]{36}$/);assert.equal(created.status,'new-lead');assert.equal(created.downloads.length,2);
+ const saved=await getCase(created.id,{store});assert.equal(saved.client.email,'ana@example.com');assert.equal(saved.estimate.budget.total,estimate.budget.total);
+ assert.equal(verifyDownloadGrant(created.id,created.downloadToken,'test-secret'),true);
+ await assert.rejects(()=>createCase({client:{name:'Ana',email:'ana@example.com',phone:'600123123'},intent:'download',privacy:true,estimate:{...estimate,project:{...estimate.project,title:'alterado'}},estimateToken},{store,secret:'test-secret'}),/presupuesto/i);
+});
+
+test('case is not persisted when owner notification fails',async()=>{
+ const store=createMemoryCaseStore(),estimate=await interpretProject({prompt:'Casa 60 metros cuadrados'},{generate:async()=>rawEstimate});
+ await assert.rejects(()=>createCase({client:{name:'Luis',email:'luis@example.com',phone:'600111222'},intent:'download',privacy:true,estimate,estimateToken:sealEstimate(estimate,'s')},{store,secret:'s',notify:async()=>{throw new Error('mail')}}),/notificar/i);
+ assert.equal((await store.list()).length,0);
+});
+
+test('anonymization removes personal identifiers and retains technical totals',async()=>{
+ const store=createMemoryCaseStore(),estimate=await interpretProject({prompt:'Casa 60 metros cuadrados'},{generate:async()=>rawEstimate});
+ const made=await createCase({client:{name:'Luis',email:'luis@example.com',phone:'600111222'},intent:'download',privacy:true,estimate,estimateToken:sealEstimate(estimate,'s')},{store,secret:'s',notify:async()=>({ok:true})});
+ await anonymizeCase(made.id,{store});const saved=await getCase(made.id,{store});
+ assert.equal(saved.client.email,'');assert.equal(saved.client.name,'Anonimizado');assert.equal(saved.estimate.budget.total,estimate.budget.total);
+});
+
+test('professional PDF and workbook derive from the stored case snapshot',async()=>{
+ const store=createMemoryCaseStore(),estimate=await interpretProject({prompt:'Casa 60 metros cuadrados'},{generate:async()=>rawEstimate});
+ const made=await createCase({client:{name:'Ana Pérez',email:'ana@example.com',phone:'600123123'},intent:'assistance',privacy:true,estimate,estimateToken:sealEstimate(estimate,'s')},{store,secret:'s',notify:async()=>({ok:true})});
+ const record=await getCase(made.id,{store}),pdf=await professionalPdf(record),xlsx=await professionalWorkbook(record);
+ const parsed=await PDFDocument.load(pdf);assert.ok(parsed.getPageCount()>=2);assert.ok(pdf.length>3000);
+ const wb=new ExcelJS.Workbook();await wb.xlsx.load(xlsx);assert.deepEqual(wb.worksheets.map(s=>s.name),['Resumen','Capítulos','Mediciones','Hipótesis','Cliente']);
+ assert.equal(wb.getWorksheet('Resumen').getCell('B12').value,estimate.budget.total);
+ assert.equal(wb.getWorksheet('Cliente').getCell('B2').value,'Ana Pérez');
+ assert.equal(wb.getWorksheet('Mediciones').getCell('H2').value,13200);
+});
+
+test('admin authentication uses signed expiring sessions and constant password comparison',()=>{
+ const token=createAdminSession('session-secret',1000);assert.equal(verifyAdminSession(token,'session-secret'),true);assert.equal(verifyAdminSession(token,'wrong'),false);
+ assert.equal(verifyAdminPassword('correct horse','correct horse'),true);assert.equal(verifyAdminPassword('wrong','correct horse'),false);
+});
+
+test('admin case filtering and CSV cover client, city and intent',()=>{
+ const cases=[{id:'1',createdAt:'2026-10-09',status:'new-lead',intent:'assistance',client:{name:'Ana Pérez',email:'ana@example.com'},estimate:{project:{title:'Chalet',location:'Madrid'},budget:{total:100}}},{id:'2',createdAt:'2026-10-08',status:'download-only',intent:'download',client:{name:'Luis',email:'luis@example.com'},estimate:{project:{title:'Local',location:'Sevilla'},budget:{total:200}}}];
+ assert.deepEqual(filterCases(cases,{q:'madrid',intent:'assistance'}).map(value=>value.id),['1']);const csv=casesCsv(cases);assert.match(csv,/Ana Pérez/);assert.match(csv,/download-only/);
 });

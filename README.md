@@ -1,4 +1,16 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# robotARQ
+
+## Variables de producción
+
+- `OPENAI_API_KEY`: interpretación técnica del texto libre.
+- `OPENAI_MODEL`: modelo de interpretación; por defecto `gpt-5.5`.
+- `BLOB_READ_WRITE_TOKEN`: almacenamiento cifrado de expedientes.
+- `RESEND_API_KEY`, `RESEND_FROM` y `RESEND_OWNER`: entrega al cliente y aviso administrativo.
+- `ADMIN_PASSWORD`: clave de acceso al centro administrativo (mínimo 12 caracteres).
+- `ADMIN_SESSION_SECRET`: secreto aleatorio para sesiones, firmas y cifrado (mínimo 32 bytes).
+- `NEXT_PUBLIC_SITE_URL`: URL canónica, `https://robotarq.com` en producción.
+
+Los expedientes se almacenan cifrados. PDF y XLSX solo se generan desde un expediente validado después de identificar al cliente.
 
 ## Getting Started
 

@@ -2,37 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import ExcelJS from 'exceljs';
 import { PDFDocument } from 'pdf-lib';
-const base=process.env.TEST_BASE_URL || 'http://localhost:3005';
-async function post(path,data){return fetch(base+path,{method:'POST',headers:{'Content-Type':'application/json','x-robotarq-test':'1'},body:JSON.stringify(data)});}
-test('vague request asks for measurements without a fabricated total',async()=>{
- const r=await post('/api/estimate',{prompt:'Quiero reformar'});assert.equal(r.status,422);const d=await r.json();assert.ok(d.questions.length);assert.equal(d.budget,undefined);
-});
-test('new build returns a clearly marked preliminary project budget',async()=>{
- const r=await post('/api/estimate',{obra:'obra_nueva',m2:120,prompt:'Casa de 120 m²'});assert.equal(r.status,200);const d=await r.json();assert.equal(d.ok,true);assert.equal(d.meta.scope,'project-preliminary');assert.ok(d.budget.total>0);
-});
-test('unmeasured ceiling painting cannot borrow tile area',async()=>{
- const r=await post('/api/estimate',{prompt:'Alicatar 60 m² y pintar techos'});assert.equal(r.status,422);
-});
-test('superscript and plain units give the same explicit quantities without extra lights',async()=>{
- const a=await (await post('/api/estimate',{prompt:'Pegar 60 m² cerámica y cambiar cuadro eléctrico'})).json();
- const b=await (await post('/api/estimate',{prompt:'Pegar 60 m2 cerámica y cambiar cuadro eléctrico'})).json();
- assert.equal(a.ok,true);assert.deepEqual(a.budget,b.budget);
- const items=Object.values(a.budget.chapters).flatMap(c=>c.items);assert.equal(items.find(i=>i.code==='RV01').qty,60);assert.equal(items.some(i=>/puntos|tomas/i.test(i.desc)),false);
-});
-const doc={meta:{title:'Estimación de prueba',prompt:'60 m² cerámica y cuadro'},rows:[{cap:'RV',capName:'Revestimientos',code:'RV01',desc:'Cerámica',ud:'m2',qty:60,pu:38},{cap:'IN',capName:'Instalaciones',code:'IN01',desc:'Cuadro eléctrico',ud:'ud',qty:1,pu:350}],extra:[],total:2630};
-test('Excel retains every code, description and total with no template remnants',async()=>{
- const r=await post('/api/export/xlsx',doc);assert.equal(r.status,200);const wb=new ExcelJS.Workbook();await wb.xlsx.load(Buffer.from(await r.arrayBuffer()));
- const ws=wb.getWorksheet('Partidas');assert.ok(ws);assert.equal(ws.getCell('C3').value,'IN01');assert.equal(ws.getCell('D3').value,'Cuadro eléctrico');assert.equal(wb.getWorksheet('Resumen').getCell('B4').value,2630);
-});
-test('PDF is a readable PDF rather than a React render error',async()=>{
- const r=await post('/api/export/pdf',doc);assert.equal(r.status,200);const bytes=await r.arrayBuffer();const pdf=await PDFDocument.load(bytes);assert.ok(pdf.getPageCount()>=1);
-});
-test('export rejects a forged total',async()=>{
- const r=await post('/api/export/xlsx',{...doc,total:1});assert.equal(r.status,400);
-});
-test('contact validates privacy acknowledgement before provider work',async()=>{
- const r=await post('/api/notify',{name:'Prueba',email:'audit@example.invalid',phone:'000000000'});assert.equal(r.status,400);
-});
-test('unused paid generation and arbitrary mail routes are disabled',async()=>{
- for(const path of ['/api/ai','/api/generate','/api/export/send']){const r=await post(path,{});assert.equal(r.status,410);}
-});
+const base=process.env.TEST_BASE_URL||'http://localhost:3005';
+const headers={'Content-Type':'application/json','x-robotarq-test':'1'};
+const post=(path,data)=>fetch(base+path,{method:'POST',headers,body:JSON.stringify(data)});
+
+test('ordinary Spanish units produce a professional AI estimate',async()=>{const response=await post('/api/estimate',{tipo:'vivienda',ciudad:'Madrid',prompt:'Necesito una vivienda unifamiliar aislada tipo chalet de 60 metros cuadrados'});assert.equal(response.status,200);const data=await response.json();assert.equal(data.ok,true);assert.equal(data.project.areaM2,60);assert.equal(data.meta.scope,'professional-preliminary');assert.equal(data.market.length,3);assert.ok(data.estimateToken);});
+test('vague prompts receive focused questions without a fabricated total',async()=>{const response=await post('/api/estimate',{prompt:'Quiero reformar'});assert.equal(response.status,422);const data=await response.json();assert.ok(data.questions.length);assert.equal(data.budget,undefined);});
+test('unusual projects reach interpretation instead of a residential fallback',async()=>{const response=await post('/api/estimate',{tipo:'otro',prompt:'Quiero una vivienda con forma de piña suspendida entre tres árboles y 45 metros cuadrados'});assert.equal(response.status,200);const data=await response.json();assert.match(data.project.summary,/piña/i);});
+test('legacy arbitrary export and mail routes stay locked',async()=>{for(const path of ['/api/ai','/api/generate','/api/export/send','/api/export/pdf','/api/export/xlsx','/api/notify']){const response=await post(path,{});assert.equal(response.status,410,path);}});
+test('client registration unlocks professional PDF and Excel from the saved case',async()=>{const estimate=await (await post('/api/estimate',{tipo:'vivienda',ciudad:'Madrid',prompt:'Chalet aislado de 60 metros cuadrados con calidades medias'})).json();const response=await post('/api/cases',{client:{name:'Cliente Prueba',email:'cliente@example.invalid',phone:'600000000'},intent:'download',privacy:true,estimate,estimateToken:estimate.estimateToken});assert.equal(response.status,200);const created=await response.json();assert.equal(created.downloads.length,2);const pdfResponse=await fetch(base+created.downloads[0],{headers:{'x-robotarq-test':'1'}});assert.equal(pdfResponse.status,200);const pdf=await PDFDocument.load(await pdfResponse.arrayBuffer());assert.ok(pdf.getPageCount()>=2);const xlsxResponse=await fetch(base+created.downloads[1],{headers:{'x-robotarq-test':'1'}});assert.equal(xlsxResponse.status,200);const wb=new ExcelJS.Workbook();await wb.xlsx.load(Buffer.from(await xlsxResponse.arrayBuffer()));assert.deepEqual(wb.worksheets.map(sheet=>sheet.name),['Resumen','Capítulos','Mediciones','Hipótesis','Cliente']);});
+test('anonymous users cannot read administrative cases',async()=>{const response=await fetch(base+'/api/admin/cases');assert.equal(response.status,401);});

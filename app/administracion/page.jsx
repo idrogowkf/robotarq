@@ -1,0 +1,15 @@
+import Link from 'next/link';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { ADMIN_COOKIE, adminSecret, verifyAdminSession, filterCases } from '@/lib/admin-auth.mjs';
+import { listCases } from '@/lib/cases.mjs';
+export const metadata={title:'Administración | robotARQ',robots:{index:false,follow:false}};
+const money=value=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(value);
+export default async function Page({searchParams}){
+ const jar=await cookies();if(!verifyAdminSession(jar.get(ADMIN_COOKIE)?.value,adminSecret()))redirect('/administracion/login');
+ const filters=await searchParams,values=filterCases(await listCases(),filters),total=values.reduce((sum,value)=>sum+Number(value.estimate?.budget?.total||0),0);
+ return <main className="mx-auto max-w-7xl px-4 py-10"><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-wider text-sky-700 font-bold">Centro administrativo</p><h1 className="text-3xl font-bold mt-1">Expedientes robotARQ</h1></div><Link className="border rounded-lg px-4 py-2" href="/api/admin/cases?format=csv">Exportar CSV</Link></div>
+ <div className="grid sm:grid-cols-3 gap-4 mt-6">{[['Expedientes',values.length],['Solicitudes técnicas',values.filter(v=>v.intent==='assistance').length],['Valor probable',money(total)]].map(([label,value])=><div key={label} className="rounded-xl bg-slate-950 text-white p-5"><p className="text-slate-400 text-sm">{label}</p><p className="text-2xl font-bold mt-1">{value}</p></div>)}</div>
+ <form className="grid sm:grid-cols-4 gap-3 mt-6"><input name="q" defaultValue={filters.q||''} placeholder="Cliente, ciudad, proyecto…" className="border rounded-lg p-3"/><select name="intent" defaultValue={filters.intent||''} className="border rounded-lg p-3"><option value="">Todas las modalidades</option><option value="assistance">Asistencia</option><option value="download">Solo descarga</option></select><select name="status" defaultValue={filters.status||''} className="border rounded-lg p-3"><option value="">Todos los estados</option>{['new-lead','download-only','contacted','in-review','discarded','converted','anonymized'].map(value=><option key={value}>{value}</option>)}</select><button className="bg-sky-700 text-white rounded-lg p-3">Filtrar</button></form>
+ <div className="overflow-x-auto mt-6"><table className="min-w-[900px] w-full text-sm"><thead><tr>{['Fecha','Cliente','Proyecto','Ciudad','Modalidad','Estado','Total',''].map(value=><th key={value} className="text-left border-b p-3">{value}</th>)}</tr></thead><tbody>{values.map(value=><tr key={value.id}>{[value.createdAt.slice(0,10),value.client.name,value.estimate.project.title,value.estimate.project.location,value.intent,value.status,money(value.estimate.budget.total)].map((cell,index)=><td key={index} className="border-b p-3">{cell}</td>)}<td className="border-b p-3"><Link className="underline font-semibold" href={`/administracion/${value.id}`}>Abrir</Link></td></tr>)}</tbody></table></div></main>;
+}
