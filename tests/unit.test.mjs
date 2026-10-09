@@ -91,3 +91,9 @@ test('timed-out assistance receives an abort signal',async()=>{
  let aborted=false;const generate=({signal})=>new Promise((_,reject)=>signal.addEventListener('abort',()=>{aborted=true;reject(new Error('aborted'));},{once:true}));
  const r=await estimateRequest({prompt:'Vivienda prefabricada de hormigón de 60 m2'},{generate,fallbackOnInvalid:true,generateTimeoutMs:10});assert.equal(r.ok,true);assert.equal(aborted,true);
 });
+test('fallback refuses pools, industrial buildings, and partial structural repairs',async()=>{
+ for(const prompt of ['Construir piscina de hormigón de 60 m2','Construir nave industrial de 60 m2','Reparar estructura de vivienda de 60 m2']){
+  let assisted=false;const r=await estimateRequest({tipo:'vivienda',prompt},{generate:async()=>{assisted=true;throw new Error('offline')},fallbackOnInvalid:true});
+  assert.equal(r.ok,false,prompt);assert.equal(assisted,false,prompt);assert.match(r.questions.join(' '),/alcance|vivienda completa|reforma integral/i,prompt);
+ }
+});
