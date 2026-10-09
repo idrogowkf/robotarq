@@ -2,9 +2,9 @@
 export const dynamic = "force-static";
 
 export const metadata = {
-    title: "Estimación de reformas de bares y locales",
+    title: "Presupuesto de reforma online: calcula partidas",
     description:
-        "Estima trabajos concretos de reforma con mediciones explícitas y solicita revisión técnica.",
+        "Calcula un presupuesto orientativo de reforma con partidas y mediciones. Pintura, cerámica y electricidad básica; descarga PDF y Excel y solicita revisión.",
     robots: "index, follow",
     alternates: { canonical: "/" },
 };
@@ -24,8 +24,9 @@ export default function LandingHome() {
             {/* ===== HERO ===== */}
             <Section className="pt-24 pb-6">
                 {/* Marca en una sola línea: robotARQ */}
-                <h1 className="font-extrabold tracking-tight text-[14vw] sm:text-[11vw] md:text-[8rem] leading-none">
-                    robot<span className="font-extrabold">ARQ</span>
+                <p className="font-bold text-xl mb-4">robotARQ</p>
+                <h1 className="font-extrabold tracking-tight text-4xl sm:text-5xl leading-tight max-w-4xl">
+                    Calcula tu presupuesto de reforma online
                 </h1>
 
                 {/* Subtítulo */}
@@ -34,6 +35,7 @@ export default function LandingHome() {
                     <strong>estimación orientativa</strong> con partidas, cantidades y precios.
                 </p>
 
+                <p className="mt-4"><a className="underline" href="/presupuesto-reforma">Cómo preparar y comparar un presupuesto de reforma</a></p>
                 {/* Formulario -> /estimador (bloque minimal y protagonista) */}
                 <div className="mt-8">
                     <form
