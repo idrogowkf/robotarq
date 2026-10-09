@@ -1,9 +1,1 @@
-﻿// app/sitemap.js
-export default function sitemap() {
-    const base = "https://robotarq.com";
-    return [
-        { url: `${base}/`, priority: 1.0 },
-        { url: `${base}/estimador`, priority: 0.9 },
-        { url: `${base}/contacto`, priority: 0.6 },
-    ];
-}
+export default function sitemap(){return ['','/estimador','/contacto','/reformas-hosteleria','/reformas-locales','/reformas-viviendas','/privacidad','/condiciones'].map(path=>({url:'https://robotarq.com'+(path||'/'),changeFrequency:'monthly',priority:path?0.6:1}));}

@@ -8,7 +8,7 @@ export default function Footer() {
                 <div>
                     <div className="font-bold">robotARQ</div>
                     <p className="text-neutral-600 mt-2">
-                        Presupuestos técnicos con IA. Proyecto, licencias y obra.
+                        Estimaciones orientativas de reformas y revisión técnica.
                     </p>
                 </div>
 
@@ -18,6 +18,8 @@ export default function Footer() {
                         <li><Link href="/" className="hover:underline">Inicio</Link></li>
                         <li><Link href="/estimador" className="hover:underline">Generar presupuesto</Link></li>
                         <li><Link href="/contacto" className="hover:underline">Contacto</Link></li>
+                        <li><Link href="/privacidad" className="hover:underline">Privacidad</Link></li>
+                        <li><Link href="/condiciones" className="hover:underline">Condiciones de uso</Link></li>
                     </ul>
                 </div>
 

@@ -9,7 +9,7 @@ export default async function Page(props) {
     const initTipo = ((sp?.tipo ?? "local") + "").toString();
     const initPrompt = (
         (sp?.prompt ??
-            "Describe tu reforma u obra nueva con detalles (m², estancias, calidades…).") + ""
+            "") + ""
     ).toString();
     const initCiudad = ((sp?.ciudad ?? "") + "").toString();
 
@@ -17,10 +17,10 @@ export default async function Page(props) {
         <div className="pt-24 pb-16">
             <div className="max-w-6xl mx-auto px-4">
                 <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-                    Presupuesto técnico
+                    Estimación de reformas
                 </h1>
                 <p className="text-neutral-600 mt-2">
-                    Describe tu reforma u obra nueva y genera un presupuesto con partidas, mediciones y precios.
+                    Indica partidas y cantidades para obtener una estimación orientativa. Confirma el alcance y los precios mediante revisión técnica.
                 </p>
 
                 <div className="mt-8">

@@ -1,10 +1,10 @@
-﻿// app/page.jsx — Server Component
+// app/page.jsx — Server Component
 export const dynamic = "force-static";
 
 export const metadata = {
-    title: "robotARQ — Reformas | Genera tu Presupuesto Técnico",
+    title: "Estimación de reformas de bares y locales",
     description:
-        "Describe tu reforma y generamos un presupuesto técnico con partidas, cantidades y precios.",
+        "Estima trabajos concretos de reforma con mediciones explícitas y solicita revisión técnica.",
     robots: "index, follow",
     alternates: { canonical: "/" },
 };
@@ -20,9 +20,9 @@ function Section({ children, className = "" }) {
 
 export default function LandingHome() {
     return (
-        <main className="bg-white text-[#0a0a0a]">
+        <div className="bg-white text-[#0a0a0a]">
             {/* ===== HERO ===== */}
-            <Section className="pt-14 pb-6">
+            <Section className="pt-24 pb-6">
                 {/* Marca en una sola línea: robotARQ */}
                 <h1 className="font-extrabold tracking-tight text-[14vw] sm:text-[11vw] md:text-[8rem] leading-none">
                     robot<span className="font-extrabold">ARQ</span>
@@ -30,8 +30,8 @@ export default function LandingHome() {
 
                 {/* Subtítulo */}
                 <p className="mt-4 text-lg sm:text-xl text-neutral-700 max-w-3xl">
-                    Somos tu empresa de reformas. Describe lo que necesitas y te devolvemos un{" "}
-                    <strong>presupuesto técnico</strong> con partidas, cantidades y precios.
+                    Describe trabajos concretos de tu reforma y obtén una{" "}
+                    <strong>estimación orientativa</strong> con partidas, cantidades y precios.
                 </p>
 
                 {/* Formulario -> /estimador (bloque minimal y protagonista) */}
@@ -43,9 +43,9 @@ export default function LandingHome() {
                     >
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                             <div className="w-full sm:w-64">
-                                <label className="text-sm text-neutral-600">Tipo de reforma</label>
+                                <label htmlFor="home-tipo" className="text-sm text-neutral-600">Tipo de reforma</label>
                                 <select
-                                    name="tipo"
+                                    id="home-tipo" name="tipo"
                                     defaultValue="hosteleria"
                                     className="mt-1 w-full rounded-xl border border-neutral-300 px-3 py-3 outline-none focus:ring-2 focus:ring-black/10"
                                 >
@@ -57,11 +57,11 @@ export default function LandingHome() {
                             </div>
 
                             <div className="flex-1">
-                                <label className="text-sm text-neutral-600">Describe tu reforma</label>
+                                <label htmlFor="home-prompt" className="text-sm text-neutral-600">Describe tu reforma</label>
                                 <input
-                                    name="prompt"
+                                    id="home-prompt" name="prompt" maxLength={4000}
                                     required
-                                    placeholder="Ej.: Reforma integral de bar de 120 m²: nueva barra, pavimento, iluminación, acústica…"
+                                    placeholder="Ej.: colocar 60 m² de cerámica y cambiar un cuadro eléctrico"
                                     className="mt-1 w-full rounded-xl border border-neutral-300 px-4 py-4 outline-none focus:ring-2 focus:ring-black/10 text-base"
                                 />
                             </div>
@@ -72,7 +72,7 @@ export default function LandingHome() {
                                 type="submit"
                                 className="inline-flex items-center justify-center rounded-xl bg-black text-white px-6 py-3.5 font-semibold hover:bg-black/90"
                             >
-                                Generar presupuesto ahora
+                                Abrir estimador
                             </button>
                         </div>
 
@@ -83,110 +83,14 @@ export default function LandingHome() {
                 </div>
             </Section>
 
-            {/* ===== Imagen destacada ===== */}
-            <Section className="pt-10 pb-16">
-                <figure className="rounded-3xl overflow-hidden border border-neutral-200 shadow-sm">
-                    <img
-                        src="/assets/caso-bar-01-despues.jpg"
-                        alt="Reforma finalizada — Madrid"
-                        className="w-full h-[48vh] sm:h-[58vh] object-cover"
-                        loading="eager"
-                    />
-                </figure>
-            </Section>
-
-            {/* ===== Bloque empresa / método ===== */}
-            <Section className="pb-10">
-                <div className="grid md:grid-cols-2 gap-6 items-start">
-                    <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold">Por qué robotARQ</h2>
-                        <p className="text-neutral-700 mt-2">
-                            Unimos presupuesto técnico, proyecto, licencias y obra. Control de calidad por hitos y
-                            seguimiento claro para abrir cuanto antes.
-                        </p>
-                        <ul className="mt-4 space-y-2 text-neutral-800">
-                            <li>• Estructura de partidas comparable y transparente</li>
-                            <li>• Coordinación técnica y constructiva en un solo equipo</li>
-                            <li>• Comunicación simple: lo que ves en la estimación es lo que ejecutamos</li>
-                        </ul>
-                    </div>
-                    <div className="grid sm:grid-cols-2 gap-4">
-                        {[
-                            { t: "Presupuesto técnico", d: "Partidas, cantidades y precios claros." },
-                            { t: "Proyecto y licencias", d: "Cumplimiento normativo desde el inicio." },
-                            { t: "Obra ágil", d: "Planificación por hitos y entregas limpias." },
-                            { t: "Seguimiento", d: "Transparencia y comunicación continua." },
-                        ].map((b, i) => (
-                            <div key={i} className="border rounded-2xl p-5 shadow-sm bg-white">
-                                <div className="font-semibold">{b.t}</div>
-                                <p className="text-neutral-700 mt-1">{b.d}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </Section>
-
-            {/* ===== Ejemplos de precios ===== */}
-            <Section className="pb-12">
-                <h2 className="text-2xl sm:text-3xl font-bold">Ejemplos de precios</h2>
-                <p className="text-neutral-600 mt-1">
-                    Importes orientativos sin IVA. La estimación detallará partidas y cantidades.
-                </p>
-
-                <div className="grid md:grid-cols-3 gap-4 mt-6">
-                    {[
-                        {
-                            t: "Local Comercial · 100 m²",
-                            p: "35.000 – 55.000 €",
-                            d: "Pavimento, pintura, electricidad, accesibilidad y rotulación interior.",
-                        },
-                        {
-                            t: "Vivienda · 90 m²",
-                            p: "28.000 – 48.000 €",
-                            d: "Demoliciones, acabados, cocina/baño estándar y electricidad básica.",
-                        },
-                        {
-                            t: "Hostelería · 120 m²",
-                            p: "60.000 – 95.000 €",
-                            d: "Barra/cocina, extracción, acústica, pavimentos y proyecto técnico.",
-                        },
-                    ].map((c, i) => (
-                        <div
-                            key={i}
-                            className="rounded-3xl border border-neutral-200 shadow-sm bg-gradient-to-b from-white to-neutral-50 p-6"
-                        >
-                            <div className="text-neutral-900 text-lg font-semibold">{c.t}</div>
-                            <div className="text-3xl font-bold mt-3">{c.p}</div>
-                            <p className="text-neutral-700 mt-2">{c.d}</p>
-                        </div>
-                    ))}
-                </div>
-            </Section>
-
-            {/* ===== Testimonios ===== */}
-            <Section className="pb-12">
-                <h2 className="text-2xl sm:text-3xl font-bold">Testimonios</h2>
-                <div className="grid md:grid-cols-3 gap-4 mt-4">
-                    {[
-                        { q: "Nos entregaron el bar listo para abrir, con licencias y sin sorpresas.", w: "Laura S. — Madrid" },
-                        { q: "Obra exprés de barra y cocina, abrimos en 2 semanas.", w: "Dani R. — Barcelona" },
-                        { q: "Insonorización y salida de humos resueltas sin parar el negocio.", w: "María F. — Valencia" },
-                    ].map((t, i) => (
-                        <div key={i} className="border rounded-2xl shadow-sm p-6 bg-white">
-                            <p className="italic">“{t.q}”</p>
-                            <div className="font-semibold mt-2">{t.w}</div>
-                        </div>
-                    ))}
-                </div>
-            </Section>
-
+            <Section className="py-12"><h2 className="text-2xl font-bold">Primero el alcance, después el precio</h2><p className="mt-4 text-neutral-700">El estimador piloto calcula cerámica, pintura, puntos de luz, tomas y cuadros con cantidades aportadas. Las reformas integrales, licencias y obras con instalaciones especiales requieren estudio y revisión técnica.</p><p className="mt-3 text-neutral-700">La atención y ejecución se confirman según ubicación y disponibilidad. Una estimación automática no sustituye una visita ni constituye una oferta contractual.</p></Section>
             {/* ===== Servicios ===== */}
             <Section className="pb-16">
                 <h2 className="text-2xl sm:text-3xl font-bold">Servicios</h2>
                 <div className="grid sm:grid-cols-4 gap-4 mt-4">
                     {[
                         { t: "Generar Presupuesto", href: "/estimador" },
-                        { t: "Reformas de Bares", href: "/reformas-bares" },
+                        { t: "Reformas de Bares", href: "/reformas-hosteleria" },
                         { t: "Reformas de Locales", href: "/reformas-locales" },
                         { t: "Reformas de Viviendas", href: "/reformas-viviendas" },
                     ].map((s, i) => (
@@ -234,6 +138,6 @@ export default function LandingHome() {
                     Llamar
                 </a>
             </div>
-        </main>
+        </div>
     );
 }
