@@ -130,11 +130,11 @@ export default function LandingHome() {
                     href={WA}
                     target="_blank"
                     rel="noopener"
-                    className="px-4 py-3 rounded-full bg-[#25D366] text-white shadow"
+                    className="px-4 py-3 rounded-full bg-[#166534] text-white shadow"
                 >
                     WhatsApp
                 </a>
-                <a href={`tel:${PHONE}`} className="px-4 py-3 rounded-full bg-sky-600 text-white shadow">
+                <a href={`tel:${PHONE}`} className="px-4 py-3 rounded-full bg-sky-800 text-white shadow">
                     Llamar
                 </a>
             </div>
