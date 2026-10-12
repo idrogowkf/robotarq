@@ -7,6 +7,8 @@ import { PDFDocument } from 'pdf-lib';
 import ExcelJS from 'exceljs';
 import { createAdminSession, verifyAdminSession, verifyAdminPassword, filterCases, casesCsv, groupCasesByClient } from '../lib/admin-auth.mjs';
 import { deliverCaseEmails } from '../lib/case-email.mjs';
+import { createMemoryProviderStore,saveProvider,listProviders } from '../lib/providers.mjs';
+import { providerQuoteMessage,sendProviderQuote } from '../lib/provider-email.mjs';
 
 const rawEstimate={
  project:{title:'Vivienda unifamiliar aislada',summary:'Chalet de una planta y 60 metros cuadrados.',projectType:'obra nueva',location:'Madrid',areaM2:60,quality:'media'},
@@ -100,3 +102,5 @@ test('resolved Resend errors are rejected and client delivery includes document 
  assert.match(calls[0].html,/Centro administrativo/);assert.match(calls[0].html,/background:#0f172a/);assert.match(calls[1].html,/Descargar presupuesto PDF/);assert.match(calls[1].html,/robot<span/);
 });
 
+test('provider directory validates, searches and paginates companies',async()=>{const store=createMemoryProviderStore();await saveProvider({businessName:'Obras Madrid',email:'proveedor@example.com',specialties:'albañilería',provinces:'Madrid'},{store});await saveProvider({businessName:'Instalaciones Norte',email:'norte@example.com',specialties:'electricidad',provinces:'Madrid, Segovia'},{store});const result=await listProviders({store,q:'electricidad',page:1,pageSize:1});assert.equal(result.total,1);assert.equal(result.items[0].businessName,'Instalaciones Norte');});
+test('provider quote keeps customer contact private and uses robotARQ contact',async()=>{const record={id:'EXP-1',client:{email:'cliente@privado.es',phone:'600000001'},estimate:{project:{title:'Reforma de vivienda',location:'Madrid',areaM2:60},budget:{total:50000}},files:{pdf:Buffer.from('pdf').toString('base64')}},provider={businessName:'Proveedor',contactName:'Ana',email:'proveedor@example.com'},message=providerQuoteMessage({record,provider,adminEmail:'info@robotarq.com',adminPhone:'+34 624 473 123'});assert.doesNotMatch(message.html,/cliente@privado/);assert.match(message.html,/info@robotarq.com/);let payload;const result=await sendProviderQuote({emails:{send:async value=>(payload=value,{data:{id:'mail-1'}})}},{record,provider,from:'robotARQ Proveedores <proveedores@robotarq.com>',adminEmail:'info@robotarq.com',adminPhone:'+34 624 473 123'});assert.equal(result.messageId,'mail-1');assert.equal(payload.to[0],provider.email);assert.equal(payload.replyTo,'info@robotarq.com');assert.equal(payload.attachments[0].filename,'robotARQ-EXP-1.pdf');});
