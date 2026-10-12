@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { interpretProject, validateEstimate } from '../lib/ai-estimator.mjs';
-import { createCase, createMemoryCaseStore, getCase, verifyDownloadGrant, sealEstimate, anonymizeCase } from '../lib/cases.mjs';
+import { createCase, createMemoryCaseStore, getCase, verifyDownloadGrant, sealEstimate, anonymizeCase, refreshCaseDocuments } from '../lib/cases.mjs';
 import { professionalPdf, professionalWorkbook } from '../lib/documents.mjs';
 import { PDFDocument } from 'pdf-lib';
 import ExcelJS from 'exceljs';
-import { createAdminSession, verifyAdminSession, verifyAdminPassword, filterCases, casesCsv } from '../lib/admin-auth.mjs';
+import { createAdminSession, verifyAdminSession, verifyAdminPassword, filterCases, casesCsv, groupCasesByClient } from '../lib/admin-auth.mjs';
 import { deliverCaseEmails } from '../lib/case-email.mjs';
 
 const rawEstimate={
@@ -78,6 +78,7 @@ test('professional PDF and workbook derive from the stored case snapshot',async(
  assert.equal(wb.getWorksheet('Resumen').getCell('B12').value,estimate.budget.total);
  assert.equal(wb.getWorksheet('Cliente').getCell('B2').value,'Ana Pérez');
  assert.equal(wb.getWorksheet('Mediciones').getCell('H2').value,13200);
+ await refreshCaseDocuments(made.id,{store});assert.equal((await getCase(made.id,{store})).documentVersion,2);
 });
 
 test('admin authentication uses signed expiring sessions and constant password comparison',()=>{
@@ -89,11 +90,13 @@ test('admin case filtering and CSV cover client, city and intent',()=>{
  const cases=[{id:'1',createdAt:'2026-10-09',status:'new-lead',intent:'assistance',client:{name:'Ana Pérez',email:'ana@example.com'},estimate:{project:{title:'Chalet',location:'Madrid'},budget:{total:100}}},{id:'2',createdAt:'2026-10-08',status:'download-only',intent:'download',client:{name:'Luis',email:'luis@example.com'},estimate:{project:{title:'Local',location:'Sevilla'},budget:{total:200}}}];
  assert.deepEqual(filterCases(cases,{q:'madrid',intent:'assistance'}).map(value=>value.id),['1']);const csv=casesCsv(cases);assert.match(csv,/Ana Pérez/);assert.match(csv,/download-only/);
  assert.deepEqual(filterCases(cases,{from:'2026-10-09',type:'chalet'}).map(value=>value.id),['1']);
+ const grouped=groupCasesByClient([...cases,{...cases[0],id:'3',estimate:{...cases[0].estimate,budget:{total:50}}}]);assert.equal(grouped.length,2);assert.equal(grouped.find(value=>value.email==='ana@example.com').cases.length,2);assert.equal(grouped.find(value=>value.email==='ana@example.com').total,150);
 });
 
 test('resolved Resend errors are rejected and client delivery includes document links',async()=>{
  const calls=[];const resend={emails:{send:async payload=>{calls.push(payload);return calls.length===1?{data:{id:'owner-1'},error:null}:{data:null,error:{message:'rejected'}};}}};
  await assert.rejects(()=>deliverCaseEmails(resend,{record:{id:'abc',intent:'download',client:{name:'Ana',email:'ana@example.com',phone:'600000000'},estimate:{project:{title:'Chalet'},budget:{total:100}}},downloads:['/pdf','/xlsx'],from:'robotARQ <hola@robotarq.com>',owner:'hola@robotarq.com',siteUrl:'https://robotarq.com'}),/correo/i);
  assert.match(calls[1].text,/\/pdf/);assert.match(calls[1].text,/\/xlsx/);
+ assert.match(calls[0].html,/Centro administrativo/);assert.match(calls[0].html,/background:#0f172a/);assert.match(calls[1].html,/Descargar presupuesto PDF/);assert.match(calls[1].html,/robot<span/);
 });
 
