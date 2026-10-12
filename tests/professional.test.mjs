@@ -24,7 +24,6 @@ test('written square metres reach AI and produce a recalculated project estimate
  assert.equal(result.budget.chapters.CI.items[0].amount,13200);assert.equal(result.market.length,3);
  assert.equal(result.market[1].amount,result.budget.total);
 });
-
 test('unusual intelligible projects reach AI without residential regex gating',async()=>{
  let calls=0;const result=await interpretProject({prompt:'Quiero una vivienda con forma de piña suspendida entre tres árboles'},{generate:async()=>{calls++;return {...rawEstimate,project:{...rawEstimate.project,title:'Vivienda arbórea singular'}};}});
  assert.equal(calls,1);assert.equal(result.ok,true);assert.match(result.project.title,/arbórea/i);
@@ -67,6 +66,7 @@ test('anonymization removes personal identifiers and retains technical totals',a
  const made=await createCase({client:{name:'Luis',email:'luis@example.com',phone:'600111222'},intent:'download',privacy:true,estimate,estimateToken:sealEstimate(estimate,'s')},{store,secret:'s',notify:async()=>({ok:true})});
  await anonymizeCase(made.id,{store});const saved=await getCase(made.id,{store});
  assert.equal(saved.client.email,'');assert.equal(saved.client.name,'Anonimizado');assert.equal(saved.estimate.budget.total,estimate.budget.total);
+ const wb=new ExcelJS.Workbook();await wb.xlsx.load(Buffer.from(saved.files.xlsx,'base64'));assert.equal(wb.getWorksheet('Cliente').getCell('B2').value,'Anonimizado');assert.equal(wb.getWorksheet('Cliente').getCell('B3').value,'');
 });
 
 test('professional PDF and workbook derive from the stored case snapshot',async()=>{
@@ -96,3 +96,4 @@ test('resolved Resend errors are rejected and client delivery includes document 
  await assert.rejects(()=>deliverCaseEmails(resend,{record:{id:'abc',intent:'download',client:{name:'Ana',email:'ana@example.com',phone:'600000000'},estimate:{project:{title:'Chalet'},budget:{total:100}}},downloads:['/pdf','/xlsx'],from:'robotARQ <hola@robotarq.com>',owner:'hola@robotarq.com',siteUrl:'https://robotarq.com'}),/correo/i);
  assert.match(calls[1].text,/\/pdf/);assert.match(calls[1].text,/\/xlsx/);
 });
+
