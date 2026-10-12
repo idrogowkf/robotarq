@@ -6,6 +6,7 @@ import { professionalPdf, professionalWorkbook } from '../lib/documents.mjs';
 import { PDFDocument } from 'pdf-lib';
 import ExcelJS from 'exceljs';
 import { createAdminSession, verifyAdminSession, verifyAdminPassword, filterCases, casesCsv } from '../lib/admin-auth.mjs';
+import { deliverCaseEmails } from '../lib/case-email.mjs';
 
 const rawEstimate={
  project:{title:'Vivienda unifamiliar aislada',summary:'Chalet de una planta y 60 metros cuadrados.',projectType:'obra nueva',location:'Madrid',areaM2:60,quality:'media'},
@@ -50,7 +51,7 @@ test('case creation requires a signed unchanged estimate and stores client inten
  const estimateToken=sealEstimate(estimate,'test-secret');
  const created=await createCase({client:{name:'Ana Pérez',email:'ana@example.com',phone:'600123123'},intent:'assistance',privacy:true,estimate,estimateToken},{store,secret:'test-secret',notify:async()=>({ok:true})});
  assert.match(created.id,/^[0-9a-f-]{36}$/);assert.equal(created.status,'new-lead');assert.equal(created.downloads.length,2);
- const saved=await getCase(created.id,{store});assert.equal(saved.client.email,'ana@example.com');assert.equal(saved.estimate.budget.total,estimate.budget.total);
+ const saved=await getCase(created.id,{store});assert.equal(saved.client.email,'ana@example.com');assert.equal(saved.estimate.budget.total,estimate.budget.total);assert.ok(saved.files.pdf.length>1000);assert.ok(saved.files.xlsx.length>1000);
  assert.equal(verifyDownloadGrant(created.id,created.downloadToken,'test-secret'),true);
  await assert.rejects(()=>createCase({client:{name:'Ana',email:'ana@example.com',phone:'600123123'},intent:'download',privacy:true,estimate:{...estimate,project:{...estimate.project,title:'alterado'}},estimateToken},{store,secret:'test-secret'}),/presupuesto/i);
 });
@@ -87,4 +88,11 @@ test('admin authentication uses signed expiring sessions and constant password c
 test('admin case filtering and CSV cover client, city and intent',()=>{
  const cases=[{id:'1',createdAt:'2026-10-09',status:'new-lead',intent:'assistance',client:{name:'Ana Pérez',email:'ana@example.com'},estimate:{project:{title:'Chalet',location:'Madrid'},budget:{total:100}}},{id:'2',createdAt:'2026-10-08',status:'download-only',intent:'download',client:{name:'Luis',email:'luis@example.com'},estimate:{project:{title:'Local',location:'Sevilla'},budget:{total:200}}}];
  assert.deepEqual(filterCases(cases,{q:'madrid',intent:'assistance'}).map(value=>value.id),['1']);const csv=casesCsv(cases);assert.match(csv,/Ana Pérez/);assert.match(csv,/download-only/);
+ assert.deepEqual(filterCases(cases,{from:'2026-10-09',type:'chalet'}).map(value=>value.id),['1']);
+});
+
+test('resolved Resend errors are rejected and client delivery includes document links',async()=>{
+ const calls=[];const resend={emails:{send:async payload=>{calls.push(payload);return calls.length===1?{data:{id:'owner-1'},error:null}:{data:null,error:{message:'rejected'}};}}};
+ await assert.rejects(()=>deliverCaseEmails(resend,{record:{id:'abc',intent:'download',client:{name:'Ana',email:'ana@example.com',phone:'600000000'},estimate:{project:{title:'Chalet'},budget:{total:100}}},downloads:['/pdf','/xlsx'],from:'robotARQ <hola@robotarq.com>',owner:'hola@robotarq.com',siteUrl:'https://robotarq.com'}),/correo/i);
+ assert.match(calls[1].text,/\/pdf/);assert.match(calls[1].text,/\/xlsx/);
 });

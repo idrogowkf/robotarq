@@ -3,7 +3,8 @@
 ## Variables de producción
 
 - `OPENAI_API_KEY`: interpretación técnica del texto libre.
-- `OPENAI_MODEL`: modelo de interpretación; por defecto `gpt-5.5`.
+- `OPENAI_MODEL`: modelo de interpretación; por defecto `gpt-5.4`.
+- `CASE_ENCRYPTION_SECRET`: secreto independiente de al menos 32 caracteres para cifrar expedientes y firmar descargas.
 - `BLOB_READ_WRITE_TOKEN`: almacenamiento cifrado de expedientes.
 - `RESEND_API_KEY`, `RESEND_FROM` y `RESEND_OWNER`: entrega al cliente y aviso administrativo.
 - `ADMIN_PASSWORD`: clave de acceso al centro administrativo (mínimo 12 caracteres).
