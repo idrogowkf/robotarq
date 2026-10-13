@@ -1,0 +1,1 @@
+"use client";import { useRouter } from 'next/navigation';export default function CustomerLogout(){const router=useRouter();return <button onClick={async()=>{await fetch('/api/customers/logout',{method:'POST'});router.push('/');router.refresh();}} className="rounded-xl border px-4 py-2 font-semibold">Cerrar sesión</button>}

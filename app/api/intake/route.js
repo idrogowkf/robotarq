@@ -1,0 +1,3 @@
+import { NextResponse } from 'next/server';import { gate,readBody } from '@/lib/api.mjs';import { analyzeIntake,mergeIntakeAnswers } from '@/lib/intake.mjs';
+export const maxDuration=40;
+export async function POST(req){const blocked=gate(req,30);if(blocked)return blocked;try{const body=await readBody(req),answers=Array.isArray(body.answers)?body.answers.slice(0,24):[],result=await analyzeIntake({...body,answers});return NextResponse.json({ok:true,...result,enrichedPrompt:result.ready?mergeIntakeAnswers(body.prompt,answers):undefined});}catch(error){return NextResponse.json({ok:false,error:error.message||'No se pudo analizar la obra.'},{status:422});}}

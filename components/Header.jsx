@@ -26,6 +26,7 @@ export default function Header() {
         <nav className="flex items-center gap-5 text-sm">
           <a href="/estimador" className="hover:underline">Generar presupuesto</a>
           <a href="/profesionales" className="hover:underline hidden sm:inline">Profesionales</a>
+          <a href="/acceso" className="hover:underline hidden md:inline">Mis presupuestos</a>
           <a href="/contacto" className="hover:underline">Contacto</a>
         </nav>
       </div>
