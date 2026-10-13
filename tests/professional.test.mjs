@@ -32,6 +32,7 @@ test('unusual intelligible projects reach AI without residential regex gating',a
  assert.equal(calls,1);assert.equal(result.ok,true);assert.match(result.project.title,/arbórea/i);
 });
 test('generic prefabricated homes require the construction system before pricing',async()=>{let calls=0;const result=await interpretProject({prompt:'Quiero una vivienda prefabricada de 80 metros cuadrados en Madrid'},{generate:async()=>{calls++;return rawEstimate;}});assert.equal(result.ok,false);assert.equal(result.status,422);assert.equal(calls,0);assert.match(result.questions[0],/hormigón|madera|acero/i);});
+test('a nontechnical customer can ask robotARQ to recommend the prefabricated system',async()=>{let received;const result=await interpretProject({prompt:'Quiero una vivienda prefabricada de 80 metros cuadrados. No sé qué sistema elegir; recomiéndame el más adecuado.'},{generate:async input=>{received=input;return {...rawEstimate,project:{...rawEstimate.project,summary:'Hipótesis de referencia: sistema de madera.'},assumptions:['Sistema de madera adoptado como hipótesis para estimar.']};}});assert.equal(result.ok,true);assert.match(received.prompt,/recomiéndame/i);assert.match(result.assumptions[0],/hipótesis/i);});
 
 test('provider failure cannot become a fabricated successful budget',async()=>{
  const result=await interpretProject({prompt:'Chalet de 60 metros cuadrados'},{generate:async()=>{throw new Error('offline')},timeoutMs:50});
