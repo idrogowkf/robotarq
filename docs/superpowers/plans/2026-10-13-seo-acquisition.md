@@ -1,6 +1,6 @@
 # robotARQ SEO Acquisition Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Build the P0–P3 organic acquisition architecture defined in the approved SEO specification.
 
@@ -38,12 +38,12 @@
 **Interfaces:**
 - Produces: `SEO_PAGES`, `getSeoPage(slug)`, `getIndexableSeoPages()`, `buildSitemapEntries()`.
 
-- [ ] Write failing tests for unique slug/title/description/canonical/H1, indexability gates, legal/private exclusion, distinct presets and owned last-modified dates.
-- [ ] Run `node --test tests/seo.test.mjs`; expect missing-module failure.
-- [ ] Implement the registry with all core, 15 budget, 8 professional and evidence-gated local candidates.
-- [ ] Generate sitemap entries from the registry.
-- [ ] Run the SEO tests; expect all pass.
-- [ ] Commit `feat: centralize SEO publication registry`.
+- [x] Write failing tests for unique slug/title/description/canonical/H1, indexability gates, legal/private exclusion, distinct presets and owned last-modified dates.
+- [x] Run `node --test tests/seo.test.mjs`; expect missing-module failure.
+- [x] Implement the registry with all core, 15 budget, 8 professional and evidence-gated local candidates.
+- [x] Generate sitemap entries from the registry.
+- [x] Run the SEO tests; expect all pass.
+- [x] Commit `feat: centralize SEO publication registry`.
 
 ### Task 2: Reusable page renderers and structured data
 
@@ -58,11 +58,11 @@
 - Consumes: `getSeoPage(slug)`.
 - Produces: reusable server-rendered templates with Service, BreadcrumbList and visible FAQ schema parity.
 
-- [ ] Add failing structural tests for breadcrumbs, visible FAQ/schema parity, minimum internal links and preset CTAs.
-- [ ] Run tests and confirm expected failures.
-- [ ] Implement focused reusable renderers without client-only content dependencies.
-- [ ] Run tests and confirm pass.
-- [ ] Commit `feat: add SEO landing renderers and schema`.
+- [x] Add failing structural tests for breadcrumbs, visible FAQ/schema parity, minimum internal links and preset CTAs.
+- [x] Run tests and confirm expected failures.
+- [x] Implement focused reusable renderers without client-only content dependencies.
+- [x] Run tests and confirm pass.
+- [x] Commit `feat: add SEO landing renderers and schema`.
 
 ### Task 3: P0 foundation and existing hubs
 
@@ -82,11 +82,11 @@
 - Consumes registry clusters and renderer links.
 - Produces strengthened hubs, WebApplication schema and legal noindex.
 
-- [ ] Add failing tests for estimator metadata/schema, hub child coverage and legal noindex.
-- [ ] Run and verify failures.
-- [ ] Expand estimator and hubs with indexable explanations, methodology and links; add legal noindex.
-- [ ] Run tests and build.
-- [ ] Commit `feat: strengthen SEO foundations and hubs`.
+- [x] Add failing tests for estimator metadata/schema, hub child coverage and legal noindex.
+- [x] Run and verify failures.
+- [x] Expand estimator and hubs with indexable explanations, methodology and links; add legal noindex.
+- [x] Run tests and build.
+- [x] Commit `feat: strengthen SEO foundations and hubs`.
 
 ### Task 4: P1 budget and professional coverage
 
@@ -99,12 +99,12 @@
 - Consumes: budget/professional registry entries and renderers.
 - Produces: 23 authored commercial routes with page-specific metadata and presets.
 
-- [ ] Add failing tests that every approved budget/professional slug renders through the correct template and has unique substantive sections.
-- [ ] Run and verify failures.
-- [ ] Implement the dynamic public route with `generateStaticParams`, `generateMetadata`, strict registry lookup and `notFound()` for unknown/incomplete entries.
-- [ ] Complete unique authored registry content for all 23 routes.
-- [ ] Run tests, build and crawl every route.
-- [ ] Commit `feat: publish budget and execution SEO clusters`.
+- [x] Add failing tests that every approved budget/professional slug renders through the correct template and has unique substantive sections.
+- [x] Run and verify failures.
+- [x] Implement the dynamic public route with `generateStaticParams`, `generateMetadata`, strict registry lookup and `notFound()` for unknown/incomplete entries.
+- [x] Complete unique authored registry content for all 23 routes.
+- [x] Run tests, build and crawl every route.
+- [x] Commit `feat: publish budget and execution SEO clusters`.
 
 ### Task 5: P2 trust, conversion and measurement
 
@@ -119,11 +119,11 @@
 **Interfaces:**
 - Produces: dated methodology blocks and privacy-safe funnel events.
 
-- [ ] Add failing tests for methodology provenance labels and analytics payload allowlist.
-- [ ] Run and verify failures.
-- [ ] Implement visible methodology, limitations and event names without free text or personal fields.
-- [ ] Run tests and build.
-- [ ] Commit `feat: add SEO trust content and funnel measurement`.
+- [x] Add failing tests for methodology provenance labels and analytics payload allowlist.
+- [x] Run and verify failures.
+- [x] Implement visible methodology, limitations and event names without free text or personal fields.
+- [x] Run tests and build.
+- [x] Commit `feat: add SEO trust content and funnel measurement`.
 
 ### Task 6: P3 controlled local and long-tail expansion
 
@@ -136,12 +136,12 @@
 - Consumes: registry publication gates.
 - Produces: only evidence-complete local pages; long-tail candidates remain noindex until demand threshold data exists.
 
-- [ ] Add failing tests proving incomplete candidates cannot enter static params or sitemap and evidence-complete candidates can.
-- [ ] Run and verify failures.
-- [ ] Author and publish only local candidates supported by authoritative municipal/public references and unique regional content.
-- [ ] Register long-tail candidates as unpublished with explicit evidence requirements.
-- [ ] Run tests, build and crawl.
-- [ ] Commit `feat: add evidence-gated local SEO expansion`.
+- [x] Add failing tests proving incomplete candidates cannot enter static params or sitemap and evidence-complete candidates can.
+- [x] Run and verify failures.
+- [x] Author and publish only local candidates supported by authoritative municipal/public references and unique regional content.
+- [x] Register long-tail candidates as unpublished with explicit evidence requirements.
+- [x] Run tests, build and crawl.
+- [x] Commit `feat: add evidence-gated local SEO expansion`.
 
 ### Task 7: Full verification and production release
 
@@ -153,9 +153,10 @@
 **Interfaces:**
 - Produces: repeatable production-style crawl and final deployment evidence.
 
-- [ ] Add a crawl script that verifies status, canonical, title, description, H1, robots, schema and internal links for registry pages.
-- [ ] Run `node --test tests/*.test.mjs`, `npm run lint`, `npm run build` and the SEO crawl against the production build.
-- [ ] Perform a whole-branch code review and fix Critical/Important findings with RED→GREEN tests.
-- [ ] Commit `test: add complete SEO acquisition verification`.
-- [ ] Push, deploy production, fetch live robots/sitemap and crawl all published routes.
-- [ ] Confirm no email, lead, account or paid API side effect was triggered by verification.
+- [x] Add a crawl script that verifies status, canonical, title, description, H1, robots, schema and internal links for registry pages.
+- [x] Run `node --test tests/*.test.mjs`, `npm run lint`, `npm run build` and the SEO crawl against the production build.
+- [x] Perform a whole-branch code review and fix Critical/Important findings with RED→GREEN tests.
+- [x] Commit `test: add complete SEO acquisition verification`.
+- [x] Push, deploy production, fetch live robots/sitemap and crawl all published routes.
+- [x] Confirm no email, lead, account or paid API side effect was triggered by verification.
+

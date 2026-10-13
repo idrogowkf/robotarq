@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import {SEO_PAGES} from '../../lib/seo-pages.mjs';
 export const metadata = {
  title: 'Cómo calcular y comparar un presupuesto de reforma',
  description: 'Prepara mediciones, calcula partidas y compara presupuestos de reforma. Ejemplo desglosado, PDF y Excel, exclusiones y revisión técnica.',
@@ -19,7 +20,7 @@ export default function Page(){
  <h1 className="text-4xl font-bold mt-6">Cómo calcular un presupuesto de reforma por partidas</h1>
  <p className="mt-4">Si buscas un presupuesto de reforma online, empieza por definir qué trabajos necesitas. robotARQ permite estimar pintura, cerámica y electricidad básica con cantidades explícitas y descargar el resultado en PDF y Excel.</p>
  <p className="mt-3 text-sm">Revisión: 9 de octubre de 2026 · Equipo robotARQ · Guía del estimador piloto.</p>
- <a href="/estimador" className="inline-block mt-6 bg-black text-white rounded p-3">Calcular mi estimación</a>
+ <Link href="/estimador" className="inline-block mt-6 bg-black text-white rounded p-3">Calcular mi estimación</Link>
  {sections.map(([title,text])=><section key={title} className="mt-8"><h2 className="text-2xl font-semibold">{title}</h2><p className="mt-3">{text}</p></section>)}
  <section className="mt-8"><h2 className="text-2xl font-semibold">Ejemplo: 60 m² de cerámica y un cuadro eléctrico</h2>
  <p className="mt-3">Ejemplo aritmético del catálogo piloto; no es una oferta ni un precio de mercado validado.</p>
@@ -28,6 +29,7 @@ export default function Page(){
  </tbody></table></div>
  <p className="mt-3">Excluye IVA, licencias, proyecto, demoliciones, residuos y trabajos no descritos. Las tarifas y porcentajes son supuestos del piloto y requieren confirmación local. No incluyen automáticamente una reforma eléctrica completa.</p></section>
  <section className="mt-8"><h2 className="text-2xl font-semibold">Preguntas habituales</h2><h3 className="font-semibold mt-4">¿Puedo calcular una reforma integral por los metros del piso?</h3><p>No. Se necesitan partidas, calidades e instalaciones concretas. Solicita revisión técnica para definirlas.</p><h3 className="font-semibold mt-4">¿El documento es un presupuesto contractual?</h3><p>No. Es una estimación orientativa; requiere revisión y aceptación de una oferta concreta antes de contratar.</p><h3 className="font-semibold mt-4">¿Cómo obtengo PDF y Excel?</h3><p>Introduce trabajos compatibles y mediciones en el estimador. Cuando el cálculo sea válido, podrás descargar ambos documentos.</p></section>
- <section className="mt-8"><h2 className="text-2xl font-semibold">Prepara el presupuesto según el inmueble</h2><ul className="list-disc pl-5 mt-3"><li><a className="underline" href="/reformas-viviendas">Presupuesto de reforma de vivienda</a></li><li><a className="underline" href="/reformas-locales">Presupuesto de reforma de local comercial</a></li><li><a className="underline" href="/reformas-hosteleria">Presupuesto de reforma de bar o restaurante</a></li></ul><a className="inline-block mt-6 underline" href="/contacto">Solicitar revisión del alcance y las mediciones</a></section>
+ <section className="mt-8"><h2 className="text-2xl font-semibold">Prepara el presupuesto según el inmueble</h2><ul className="list-disc pl-5 mt-3"><li><Link className="underline" href="/reformas-viviendas">Presupuesto de reforma de vivienda</Link></li><li><Link className="underline" href="/reformas-locales">Presupuesto de reforma de local comercial</Link></li><li><Link className="underline" href="/reformas-hosteleria">Presupuesto de reforma de bar o restaurante</Link></li></ul><Link className="inline-block mt-6 underline" href="/contacto">Solicitar revisión del alcance y las mediciones</Link></section>
+ <section className="mt-10"><h2 className="text-2xl font-semibold">Presupuestos por tipo de obra</h2><p className="mt-3">Elige una guía para abrir el estimador con un punto de partida específico.</p><div className="mt-5 grid gap-3 sm:grid-cols-2">{SEO_PAGES.filter(p=>p.type==='budget').map(p=><Link className="rounded-xl border p-4 font-semibold hover:border-sky-600" href={p.path} key={p.slug}>{p.h1}</Link>)}</div></section>
  </article>;
 }
