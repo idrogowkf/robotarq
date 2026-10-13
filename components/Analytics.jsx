@@ -1,3 +1,2 @@
-"use client";
-import { Analytics } from '@vercel/analytics/next';
-export default function UsageAnalytics(){return <Analytics beforeSend={event=>{const url=new URL(event.url);url.search='';url.hash='';return {...event,url:url.toString()};}} />;}
+"use client";import { useEffect,useState } from 'react';import { Analytics } from '@vercel/analytics/next';
+export default function UsageAnalytics(){const [allowed,setAllowed]=useState(false);useEffect(()=>{const read=()=>setAllowed(localStorage.getItem('robotarq-cookie-choice')==='all');read();window.addEventListener('robotarq-consent',read);return()=>window.removeEventListener('robotarq-consent',read);},[]);if(!allowed)return null;return <Analytics beforeSend={event=>{const url=new URL(event.url);url.search='';url.hash='';return {...event,url:url.toString()};}}/>;}

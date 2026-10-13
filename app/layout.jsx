@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import UsageAnalytics from "@/components/Analytics";
+import CookieNotice from "@/components/CookieNotice";
 
 const siteUrl = "https://robotarq.com";
 
@@ -93,6 +94,7 @@ export default function RootLayout({ children }) {
                 <main className="flex-1">{children}</main>
                 <Footer />
                 <UsageAnalytics />
+                <CookieNotice />
             </body>
         </html>
     );
