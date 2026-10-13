@@ -18,6 +18,8 @@ export default function Footer() {
                         <li><Link href="/" className="hover:underline">Inicio</Link></li>
                         <li><Link href="/estimador" className="hover:underline">Generar presupuesto</Link></li>
                         <li><Link href="/presupuesto-reforma" className="hover:underline">Guía de presupuestos de reforma</Link></li>
+                        <li><Link href="/profesionales" className="hover:underline">Buscar profesionales</Link></li>
+                        <li><Link href="/profesionales/alta" className="hover:underline">Alta profesional</Link></li>
                         <li><Link href="/contacto" className="hover:underline">Contacto</Link></li>
                         <li><Link href="/privacidad" className="hover:underline">Privacidad</Link></li>
                         <li><Link href="/condiciones" className="hover:underline">Condiciones de uso</Link></li>

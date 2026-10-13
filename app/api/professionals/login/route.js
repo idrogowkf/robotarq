@@ -1,0 +1,5 @@
+import { NextResponse } from 'next/server';
+import { gate,readBody } from '@/lib/api.mjs';
+import { findProviderByEmail,verifyProviderPassword } from '@/lib/providers.mjs';
+import { createProfessionalSession,PROFESSIONAL_COOKIE } from '@/lib/professional-auth.mjs';
+export async function POST(req){const limited=gate(req,12);if(limited)return limited;try{const body=await readBody(req),provider=await findProviderByEmail(body.email);if(!provider||!verifyProviderPassword(body.password,provider.passwordHash))return NextResponse.json({ok:false,error:'Correo o contraseña incorrectos.'},{status:401});if(provider.status==='inactive')return NextResponse.json({ok:false,error:'Esta cuenta está suspendida. Contacta con robotARQ.'},{status:403});const response=NextResponse.json({ok:true,status:provider.status});response.cookies.set(PROFESSIONAL_COOKIE,createProfessionalSession(provider),{httpOnly:true,secure:process.env.NODE_ENV==='production',sameSite:'lax',path:'/',maxAge:7*24*60*60});return response;}catch(error){return NextResponse.json({ok:false,error:error.message||'No se pudo iniciar sesión.'},{status:422});}}
