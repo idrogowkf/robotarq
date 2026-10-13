@@ -31,6 +31,7 @@ test('unusual intelligible projects reach AI without residential regex gating',a
  let calls=0;const result=await interpretProject({prompt:'Quiero una vivienda con forma de piña suspendida entre tres árboles'},{generate:async()=>{calls++;return {...rawEstimate,project:{...rawEstimate.project,title:'Vivienda arbórea singular'}};}});
  assert.equal(calls,1);assert.equal(result.ok,true);assert.match(result.project.title,/arbórea/i);
 });
+test('generic prefabricated homes require the construction system before pricing',async()=>{let calls=0;const result=await interpretProject({prompt:'Quiero una vivienda prefabricada de 80 metros cuadrados en Madrid'},{generate:async()=>{calls++;return rawEstimate;}});assert.equal(result.ok,false);assert.equal(result.status,422);assert.equal(calls,0);assert.match(result.questions[0],/hormigón|madera|acero/i);});
 
 test('provider failure cannot become a fabricated successful budget',async()=>{
  const result=await interpretProject({prompt:'Chalet de 60 metros cuadrados'},{generate:async()=>{throw new Error('offline')},timeoutMs:50});

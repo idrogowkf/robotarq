@@ -50,6 +50,7 @@ test('a 60 m2 prefabricated concrete home produces a validated preliminary budge
  assert.equal(r.budget.chapters.ST.items[0].amount,54000);
  assert.equal(r.budget.subtotal,69000);assert.ok(r.budget.total>r.budget.subtotal);
 });
+test('generic prefabricated housing does not default to concrete',async()=>{let called=false;const r=await estimateRequest({tipo:'vivienda',ciudad:'Madrid',prompt:'Vivienda prefabricada de 60 m2'},{generate:async()=>{called=true;return {};},fallbackOnInvalid:true});assert.equal(r.ok,false);assert.equal(called,false);assert.match(r.questions[0],/hormigón|madera|acero/i);});
 test('malformed or excessive project budgets are rejected instead of displayed',async()=>{
  const generate=async()=>({chapters:{ST:{name:'Estructura',items:[{desc:'Partida',unit:'m2',qty:60,price:9999999}]}}});
  const r=await estimateRequest({tipo:'vivienda',ciudad:'Madrid',prompt:'Vivienda prefabricada de hormigón de 60 m2'},{generate});
