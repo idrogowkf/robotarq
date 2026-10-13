@@ -10,11 +10,11 @@ const siteUrl = "https://robotarq.com";
 export const metadata = {
     metadataBase: new URL(siteUrl),
     title: {
-        default: "robotARQ — Estimación de reformas y revisión técnica",
+        default: "robotARQ — Presupuestos, reformas y profesionales",
         template: "%s | robotARQ",
     },
     description:
-        "Estimaciones orientativas de reformas con partidas y mediciones explícitas. Solicita revisión técnica y confirma el alcance.",
+        "Genera presupuestos de reforma por partidas y encuentra empresas, constructoras, contratistas y técnicos para ejecutar tu proyecto en España.",
     robots: { index: true, follow: true },
     keywords: [
 
@@ -22,6 +22,11 @@ export const metadata = {
 
         "presupuesto reforma",
         "empresa de reformas",
+        "constructoras",
+        "contratistas de obra",
+        "profesionales de reformas",
+        "buscar técnicos",
+        "proveedores de construcción",
         "proyecto y licencias",
 
 
