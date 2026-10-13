@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { interpretProject, validateEstimate } from '../lib/ai-estimator.mjs';
-import { createCase, createMemoryCaseStore, getCase, verifyDownloadGrant, sealEstimate, anonymizeCase, refreshCaseDocuments } from '../lib/cases.mjs';
+import { createCase, createMemoryCaseStore, getCase, verifyDownloadGrant, sealEstimate, anonymizeCase, refreshCaseDocuments, requestProfessionalReview } from '../lib/cases.mjs';
 import { professionalPdf, professionalWorkbook } from '../lib/documents.mjs';
 import { PDFDocument } from 'pdf-lib';
 import ExcelJS from 'exceljs';
 import { createAdminSession, verifyAdminSession, verifyAdminPassword, filterCases, casesCsv, groupCasesByClient } from '../lib/admin-auth.mjs';
-import { deliverCaseEmails } from '../lib/case-email.mjs';
+import { deliverCaseEmails, deliverProfessionalReviewRequest } from '../lib/case-email.mjs';
 import { createMemoryProviderStore,saveProvider,listProviders,listPublicProviders,hashProviderPassword,verifyProviderPassword,publicProvider,findProviderByEmail } from '../lib/providers.mjs';
 import { createProfessionalSession,verifyProfessionalSession } from '../lib/professional-auth.mjs';
 import { providerQuoteMessage,sendProviderQuote } from '../lib/provider-email.mjs';
@@ -19,6 +19,27 @@ const rawEstimate={
   ST:{code:'CH-ST',name:'Estructura',items:[{code:'ST01',desc:'Estructura de vivienda',unit:'m2',qty:60,price:700,amount:1}]}
  }
 };
+
+test('a customer can request one professional review and receives a persistent state',async()=>{
+ const store=createMemoryCaseStore(),estimate=validateEstimate(rawEstimate),secret='review-secret',created=await createCase({customerId:'customer-1',client:{name:'Ana Pérez',email:'ana@example.com',phone:'600123123'},intent:'download',privacy:true,estimate,estimateToken:sealEstimate(estimate,secret)},{store,secret,notify:async()=>({ok:true})});
+ let deliveries=0;const first=await requestProfessionalReview(created.id,{customerId:'customer-1',timeframe:'1-3-months',commitment:true},{store,notify:async()=>{deliveries++;}});
+ assert.equal(first.intent,'assistance');assert.equal(first.status,'new-lead');assert.equal(first.assistanceRequest.timeframe,'1-3-months');assert.equal(first.assistanceRequest.status,'received');
+ const repeated=await requestProfessionalReview(created.id,{customerId:'customer-1',timeframe:'immediate',commitment:true},{store,notify:async()=>{deliveries++;}});
+ assert.equal(repeated.assistanceRequest.timeframe,'1-3-months');assert.equal(deliveries,1);
+});
+
+test('professional review rejects a different customer and rolls back failed delivery',async()=>{
+ const store=createMemoryCaseStore(),estimate=validateEstimate(rawEstimate),secret='review-secret',created=await createCase({customerId:'customer-1',client:{name:'Ana Pérez',email:'ana@example.com',phone:'600123123'},intent:'download',privacy:true,estimate,estimateToken:sealEstimate(estimate,secret)},{store,secret,notify:async()=>({ok:true})});
+ await assert.rejects(()=>requestProfessionalReview(created.id,{customerId:'customer-2',timeframe:'1-3-months',commitment:true},{store}),/permiso/i);
+ await assert.rejects(()=>requestProfessionalReview(created.id,{customerId:'customer-1',timeframe:'1-3-months',commitment:true},{store,notify:async()=>{throw new Error('mail')}}),/notificar/i);
+ const saved=await store.get(created.id);assert.equal(saved.intent,'download');assert.equal(saved.assistanceRequest,undefined);
+});
+
+test('professional review email identifies the lead and links its admin case',async()=>{
+ const sent=[],resend={emails:{send:async message=>{sent.push(message);return {data:{id:'mail-1'}};}}},record={id:'case-1',client:{name:'Ana Pérez',email:'ana@example.com',phone:'600123123'},estimate:validateEstimate(rawEstimate),assistanceRequest:{timeframe:'1-3-months'}};
+ await deliverProfessionalReviewRequest(resend,{record,from:'robotARQ <hola@robotarq.com>',owner:'owner@example.com',siteUrl:'https://robotarq.com'});
+ assert.equal(sent.length,1);assert.match(sent[0].subject,/solicitud profesional/i);assert.match(sent[0].html,/1–3 meses/);assert.match(sent[0].html,/administracion\/case-1/);
+});
 
 test('written square metres reach AI and produce a recalculated project estimate',async()=>{
  let received;const prompt='Necesito una vivienda unifamiliar aislada tipo chalet de 60 metros cuadrados';
