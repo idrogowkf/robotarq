@@ -6,7 +6,7 @@
 
 ## Resultado buscado
 
-robotARQ mantendrá el presupuesto técnico como puerta principal y añadirá una segunda unidad de negocio coherente: una red de empresas y técnicos que reciben oportunidades derivadas de expedientes previamente definidos. La página `/profesionales` será el centro público del marketplace; `/para-profesionales` explicará cómo conseguir obras, precios y garantías; el área privada gestionará perfil, créditos, invitaciones y propuestas.
+robotARQ mantendrá el presupuesto técnico como puerta principal y añadirá una segunda unidad de negocio coherente: una red de empresas y técnicos que reciben oportunidades derivadas de expedientes previamente definidos. La página `/profesionales` no será una segunda portada ni una landing de captación: será el **Centro de Profesionales interno de robotARQ**, al que se llega desde “Ver toda la red”. Su prioridad será permitir al usuario buscar, filtrar, comparar y abrir perfiles. Dentro del mismo centro habrá una entrada claramente diferenciada al espacio del profesional para gestionar perfil, portfolio, oportunidades, ofertas, visibilidad y facturación. `/para-profesionales` será la página comercial y SEO que explique cómo conseguir obras, precios y garantías.
 
 El sistema debe conseguir tres conversiones medibles:
 
@@ -92,10 +92,11 @@ Se restituyen créditos por contacto inexistente, cliente no localizable durante
 
 ## Fase 1 — Centro profesional y arquitectura SEO pública
 
-**Objetivo:** lanzar una experiencia pública completa aunque el inventario inicial sea pequeño.
+**Objetivo:** lanzar un centro de búsqueda y gestión profesional completo aunque el inventario inicial sea pequeño.
 
-- Reconstruir `/profesionales` como landing principal del directorio, siguiendo el prototipo entregado.
-- Incorporar hero de búsqueda, buscador por oficio y zona, categorías visuales, carrusel destacado, cuadrícula completa, filtros, explicación de verificación, funcionamiento y bloque para captar profesionales.
+- Reconstruir `/profesionales` como centro interno del directorio, siguiendo el prototipo entregado.
+- Incorporar cabecera contextual de búsqueda, buscador por oficio y zona, categorías visuales, carrusel destacado, cuadrícula completa, filtros, comparación, explicación de verificación y recorrido para contratar.
+- Añadir un bloque “Espacio profesional” con accesos a gestionar ficha, portfolio, zonas y servicios, oportunidades, propuestas, plan destacado, créditos, facturas y estadísticas. Las herramientas privadas exigirán sesión profesional.
 - Mostrar las mismas posiciones destacadas pagadas en portada y en `/profesionales`; la frecuencia puede variar por relevancia, pero la contratación cubre ambos escaparates.
 - Mantener plazas disponibles cuando una categoría no tenga profesionales, claramente diferenciadas de empresas reales.
 - Crear `/para-profesionales`, `/para-profesionales/precios`, `/como-funciona`, `/garantia-contactos` y `/perfil-destacado`.
@@ -167,20 +168,21 @@ Se restituyen créditos por contacto inexistente, cliente no localizable durante
 
 **Criterio de salida:** las expansiones generan impresiones no vinculadas a marca, interacción y oportunidades; las páginas sin utilidad se mejoran, consolidan o retiran.
 
-## Diseño funcional de `/profesionales`
+## Diseño funcional del Centro `/profesionales`
 
 Orden de la página:
 
-1. Hero con búsqueda por especialidad y zona.
-2. Acciones diferenciadas: “Encontrar profesionales” y “Generar presupuesto”.
+1. Cabecera del Centro de Profesionales con búsqueda por especialidad y zona; debe leerse como una sección interna de robotARQ, no como otra portada del dominio.
+2. Acciones para el usuario: “Buscar en la red” y “Generar presupuesto para mi obra”.
 3. Banda de confianza: presupuesto previo, perfiles revisados, ofertas privadas y datos protegidos.
 4. Categorías visuales.
 5. Profesionales destacados con explicación de que son posiciones pagadas.
 6. Directorio completo con filtros, orden y estado de inventario.
 7. Explicación del recorrido para contratar.
 8. Valor de robotARQ frente a un directorio convencional.
-9. Captación profesional con plan gratuito y plan destacado desde 39 €/mes.
-10. Preguntas frecuentes e interconexión con las landings SEO.
+9. Espacio profesional con acceso a ficha, portfolio, cobertura, oportunidades, ofertas, visibilidad, créditos, facturas y estadísticas.
+10. Captación profesional compacta con plan gratuito y plan destacado desde 39 €/mes; la explicación comercial extensa vive en `/para-profesionales`.
+11. Preguntas frecuentes e interconexión con las landings SEO.
 
 ## Indicadores de decisión
 
