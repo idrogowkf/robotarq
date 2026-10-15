@@ -28,6 +28,8 @@ test('hybrid home keeps the budget intake first and the approved section order',
  assert.match(home,/Gemini_Generated_Image_8uqwdc8uqwdc8uqw\.jpg/);
  assert.match(home,/Presupuesta primero\. Decide con mejor información\./);
  assert.match(home,/Convierte el presupuesto en obra/);
+ assert.match(home,/pb-14 pt-24/);
+ assert.doesNotMatch(home,/<b className="block text-2xl">España<\/b>precios en euros/);
 });
 
 test('professional centre and signup expose the essential launch experience',async()=>{
