@@ -8,9 +8,11 @@ test('production home uses the approved hybrid marketplace with real provider da
  assert.match(home,/listPublicProviders/);
  assert.match(home,/HomeMarketplace/);
  assert.match(carousel,/providers\.map/);
- assert.match(market,/La red está incorporando profesionales/);
  assert.match(market,/ProfessionalCarousel/);
- assert.match(carousel,/Plaza disponible/);
+ assert.match(carousel,/Especialidad robotARQ/);
+ assert.match(carousel,/Solicitar profesional/);
+ assert.match(carousel,/muestra-profesional/);
+ assert.doesNotMatch(carousel,/Esta posición se reserva/);
  assert.match(carousel,/Perfiles anteriores/);
  assert.match(carousel,/Perfiles siguientes/);
  assert.match(carousel,/overflow-x-auto/);
@@ -25,11 +27,20 @@ test('hybrid home keeps the budget intake first and the approved section order',
  const categories=home.indexOf('Calculadoras por tipo de proyecto');
  assert.ok(intake>0&&output>intake&&market>output&&categories>market);
  assert.match(home,/Describe la obra\. Recibe el presupuesto\./);
- assert.match(home,/Gemini_Generated_Image_8uqwdc8uqwdc8uqw\.jpg/);
+ assert.match(home,/hero-arquitectura-madrid\.webp/);
+ assert.match(home,/value\.featured/);
  assert.match(home,/Presupuesta primero\. Decide con mejor información\./);
  assert.match(home,/Convierte el presupuesto en obra/);
  assert.match(home,/pb-14 pt-24/);
  assert.doesNotMatch(home,/<b className="block text-2xl">España<\/b>precios en euros/);
+});
+
+test('landing photography and unavailable sample flow stay coherent',async()=>{
+ const [market,carousel,estimator,providerForm]=await Promise.all([read('components/HomeMarketplace.jsx'),read('components/ProfessionalCarousel.jsx'),read('app/estimador/page.jsx'),read('components/ProviderForm.jsx')]);
+ for(const asset of ['reforma-integral-madrid.webp','reforma-hosteleria.webp','tecnicos-rehabilitacion.webp'])assert.match(market,new RegExp(asset.replace('.','\\.')));
+ for(const asset of ['fontaneria-instalacion.webp','electricidad-cuadro.webp'])assert.match(carousel,new RegExp(asset.replace('.','\\.')));
+ assert.match(estimator,/El profesional concreto no está disponible/);
+ assert.match(providerForm,/Destacar en la portada/);
 });
 
 test('professional centre and signup expose the essential launch experience',async()=>{

@@ -13,11 +13,13 @@ export default async function Page(props) {
             "") + ""
     ).toString();
     const initCiudad = ((sp?.ciudad ?? "") + "").toString();
+    const fromProfessionalSample = sp?.origen === "muestra-profesional";
 
     return (
         <div className="pt-24 pb-16">
             <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify({'@context':'https://schema.org','@type':'WebApplication',name:'Generador de presupuestos robotARQ',url:'https://robotarq.com/estimador',applicationCategory:'BusinessApplication',operatingSystem:'Web',description:'Genera estimaciones orientativas de obras y reformas por capítulos y partidas.'})}} />
             <div className="max-w-6xl mx-auto px-4">
+                {fromProfessionalSample && <div className="mb-6 rounded-2xl border border-sky-200 bg-sky-50 p-5"><strong className="block text-sky-950">El profesional concreto no está disponible en este momento.</strong><p className="mt-1 text-sm leading-6 text-sky-900">Describe el alcance y la ubicación. robotARQ preparará el expediente y comprobará qué profesionales compatibles tienen disponibilidad.</p></div>}
                 <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
                     Estimación de reformas
                 </h1>
