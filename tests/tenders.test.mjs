@@ -91,3 +91,13 @@ test('tender invitation identifies the deadline and portal without exposing cust
  const message=tenderInvitationMessage({record,provider,siteUrl:'https://robotarq.com'});
  assert.match(message.subject,/ronda privada/i);assert.match(message.html,/1 de noviembre de 2026/i);assert.match(message.html,/profesionales\/panel/);assert.doesNotMatch(message.html,/cliente@example.com|600000000/);
 });
+
+test('professional review request records commercial qualification',async()=>{
+ const { requestProfessionalReview }=await import('../lib/cases.mjs');
+ const store=createMemoryCaseStore();await store.put({...caseRecord(),customerId:'customer-1'});
+ const value=await requestProfessionalReview('case-1',{customerId:'customer-1',timeframe:'1-3-months',commitment:true,shareAnonymized:true,contactPreference:'phone',notes:'Necesito comparar ejecución completa.'},{store,notify:async()=>({ok:true})});
+ assert.equal(value.assistanceRequest.shareAnonymized,true);
+ assert.equal(value.assistanceRequest.contactPreference,'phone');
+ assert.equal(value.assistanceRequest.notes,'Necesito comparar ejecución completa.');
+ assert.equal(value.events.at(-1).type,'professional-review-requested');
+});

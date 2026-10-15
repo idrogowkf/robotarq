@@ -25,6 +25,21 @@ test('hybrid home keeps the budget intake first and the approved section order',
  const categories=home.indexOf('Calculadoras por tipo de proyecto');
  assert.ok(intake>0&&output>intake&&market>output&&categories>market);
  assert.match(home,/Describe la obra\. Recibe el presupuesto\./);
+ assert.match(home,/Gemini_Generated_Image_8uqwdc8uqwdc8uqw\.jpg/);
+ assert.match(home,/Presupuesta primero\. Decide con mejor información\./);
+ assert.match(home,/Convierte el presupuesto en obra/);
+});
+
+test('professional centre and signup expose the essential launch experience',async()=>{
+ const [directory,signup,form]=await Promise.all([read('app/profesionales/page.jsx'),read('app/profesionales/alta/page.jsx'),read('components/ProfessionalSignupForm.jsx')]);
+ assert.match(directory,/Encuentra profesionales para llevar tu presupuesto a obra/);
+ assert.match(directory,/Explora trabajos y descubre quién puede ejecutarlos/);
+ assert.match(directory,/Reformas integrales/);
+ assert.match(signup,/Perfil, portfolio y verificación/);
+ assert.match(form,/Datos profesionales/);
+ assert.match(form,/Servicios y cobertura/);
+ assert.match(form,/Portfolio/);
+ assert.match(form,/Revisar y enviar/);
 });
 
 test('mobile header always names the professional signup action completely',async()=>{
