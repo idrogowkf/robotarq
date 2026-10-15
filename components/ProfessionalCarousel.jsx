@@ -1,0 +1,17 @@
+"use client";
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRef } from 'react';
+
+const openings=[
+ {category:'Reformas integrales',zone:'Madrid y zona centro',image:'/assets/caso-bar-01-despues.jpg'},
+ {category:'Locales y hostelería',zone:'Valencia y costa mediterránea',image:'/assets/hero-bar-reformado-01.jpg'},
+ {category:'Arquitectura técnica',zone:'Norte de España',image:'/assets/caso-bar-02-despues.jpg'},
+ {category:'Instalaciones y electricidad',zone:'Andalucía',image:'/assets/Gemini_Generated_Image_8uqwdc8uqwdc8uqw.jpg'},
+];
+const initials=name=>String(name||'RA').split(/\s+/).slice(0,2).map(value=>value[0]).join('').toUpperCase();
+
+export default function ProfessionalCarousel({providers=[]}){const rail=useRef(null);const move=direction=>rail.current?.scrollBy({left:direction*340,behavior:'smooth'});const available=Math.max(0,4-providers.length);return <div className="mt-6"><div className="mb-4 flex justify-end gap-2"><button type="button" onClick={()=>move(-1)} aria-label="Perfiles anteriores" className="grid h-11 w-11 place-items-center rounded-full border bg-white text-xl font-bold hover:border-sky-600">←</button><button type="button" onClick={()=>move(1)} aria-label="Perfiles siguientes" className="grid h-11 w-11 place-items-center rounded-full border bg-white text-xl font-bold hover:border-sky-600">→</button></div><div ref={rail} className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5 [scrollbar-width:thin]">
+ {providers.map(provider=><article key={provider.id} className="min-w-[285px] max-w-[340px] snap-start overflow-hidden rounded-3xl border bg-[#f7f7f3] sm:min-w-[320px]"><div className="flex h-40 items-end bg-gradient-to-br from-slate-800 via-sky-900 to-sky-600 p-5 text-white"><span className="grid h-16 w-16 place-items-center rounded-full border border-white/40 bg-white/15 text-xl font-black backdrop-blur">{initials(provider.businessName)}</span></div><div className="p-6"><p className="text-xs font-extrabold uppercase tracking-wider text-emerald-700">Perfil aprobado</p><h4 className="mt-2 text-xl font-extrabold">{provider.businessName}</h4><p className="mt-2 font-semibold text-sky-800">{provider.specialties||'Servicios profesionales'}</p><p className="mt-2 text-sm text-slate-500">{provider.provinces||'Zona por consultar'}</p>{provider.description&&<p className="mt-4 line-clamp-3 leading-6 text-slate-600">{provider.description}</p>}</div></article>)}
+ {openings.slice(0,available||1).map(opening=><article key={opening.category} className="min-w-[285px] max-w-[340px] snap-start overflow-hidden rounded-3xl border bg-white sm:min-w-[320px]"><div className="relative h-40"><Image src={opening.image} alt="" fill sizes="340px" className="object-cover"/><span className="absolute inset-0 bg-slate-950/45"/><span className="absolute left-4 top-4 rounded-full bg-amber-300 px-3 py-1 text-xs font-black uppercase tracking-wider text-slate-950">Plaza disponible</span></div><div className="p-6"><h4 className="text-xl font-extrabold">{opening.category}</h4><p className="mt-2 text-sm text-slate-500">{opening.zone}</p><p className="mt-4 leading-6 text-slate-600">Esta posición se reserva para un perfil real que complete la revisión de robotARQ.</p><Link href="/profesionales/alta" className="mt-5 inline-flex rounded-xl bg-slate-950 px-4 py-2.5 font-bold text-white">Crear perfil profesional</Link></div></article>)}
+ </div></div>}

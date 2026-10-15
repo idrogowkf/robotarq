@@ -4,11 +4,16 @@ import { readFile } from 'node:fs/promises';
 const read=path=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
 
 test('production home uses the approved hybrid marketplace with real provider data',async()=>{
- const [home,market]=await Promise.all([read('app/page.jsx'),read('components/HomeMarketplace.jsx')]);
+ const [home,market,carousel]=await Promise.all([read('app/page.jsx'),read('components/HomeMarketplace.jsx'),read('components/ProfessionalCarousel.jsx')]);
  assert.match(home,/listPublicProviders/);
  assert.match(home,/HomeMarketplace/);
- assert.match(market,/providers\.map/);
+ assert.match(carousel,/providers\.map/);
  assert.match(market,/La red está incorporando profesionales/);
+ assert.match(market,/ProfessionalCarousel/);
+ assert.match(carousel,/Plaza disponible/);
+ assert.match(carousel,/Perfiles anteriores/);
+ assert.match(carousel,/Perfiles siguientes/);
+ assert.match(carousel,/overflow-x-auto/);
  for(const invented of ['Obra Clara Madrid','Espacio Hostelería','Técnica Norte','Instala Sur'])assert.doesNotMatch(home+market,new RegExp(invented));
 });
 
