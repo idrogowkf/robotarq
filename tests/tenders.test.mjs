@@ -14,6 +14,7 @@ import { tenderInvitationMessage } from '../lib/tender-email.mjs';
 const caseRecord=(overrides={})=>({
   id:'case-1',createdAt:'2026-10-14T10:00:00.000Z',updatedAt:'2026-10-14T10:00:00.000Z',
   client:{name:'Cliente',email:'cliente@example.com',phone:'600000000'},events:[],
+  assistanceRequest:{status:'received',shareAnonymized:true,timeframe:'1-3-months'},
   estimate:{project:{title:'Instalación eléctrica industrial',projectType:'electricidad',location:'Madrid',summary:'Adecuación eléctrica.'},budget:{total:24000,chapters:{}}},
   ...overrides,
 });
@@ -47,7 +48,19 @@ test('professional sees only invited tenders and customer contact remains privat
   await openTender('case-1',{providerIds:[madrid.id],deadline:'2026-11-01T18:00:00.000Z'},{caseStore,providerStore,now:()=>new Date('2026-10-15T10:00:00.000Z')});
   const visible=await listProviderTenders(madrid.id,{caseStore,now:()=>new Date('2026-10-16T10:00:00.000Z')});
   assert.equal(visible.length,1);assert.equal(visible[0].client,undefined);assert.equal(visible[0].project.location,'Madrid');
+  assert.equal(visible[0].project.summary,undefined);
   assert.equal((await listProviderTenders(sevilla.id,{caseStore})).length,0);
+});
+
+test('admin cannot open a tender without explicit anonymized sharing consent',async()=>{
+ const {caseStore,providerStore,madrid}=await setup();const record=await caseStore.get('case-1');delete record.assistanceRequest;await caseStore.put(record);
+ await assert.rejects(()=>openTender('case-1',{providerIds:[madrid.id],deadline:'2026-11-01T18:00:00.000Z'},{caseStore,providerStore,now:()=>new Date('2026-10-15T10:00:00.000Z')}),/autorización/i);
+});
+
+test('provider projection removes exact address and free-text summary',async()=>{
+ const {caseStore,providerStore,madrid}=await setup();const record=await caseStore.get('case-1');record.estimate.project.location='Calle Mayor 12, 28013 Madrid, Madrid';record.estimate.project.summary='Llamar a Ana al 600000000 para acceder';await caseStore.put(record);
+ await openTender('case-1',{providerIds:[madrid.id],deadline:'2026-11-01T18:00:00.000Z'},{caseStore,providerStore,now:()=>new Date('2026-10-15T10:00:00.000Z')});const [view]=await listProviderTenders(madrid.id,{caseStore});
+ assert.equal(view.project.location,'Madrid');assert.equal(view.project.summary,undefined);assert.doesNotMatch(JSON.stringify(view),/Calle Mayor|600000000|Ana/);
 });
 
 test('invited professional submits a structured sealed bid and can revise it',async()=>{
@@ -94,7 +107,7 @@ test('tender invitation identifies the deadline and portal without exposing cust
 
 test('professional review request records commercial qualification',async()=>{
  const { requestProfessionalReview }=await import('../lib/cases.mjs');
- const store=createMemoryCaseStore();await store.put({...caseRecord(),customerId:'customer-1'});
+ const store=createMemoryCaseStore(),record={...caseRecord(),customerId:'customer-1'};delete record.assistanceRequest;await store.put(record);
  const value=await requestProfessionalReview('case-1',{customerId:'customer-1',timeframe:'1-3-months',commitment:true,shareAnonymized:true,contactPreference:'phone',notes:'Necesito comparar ejecución completa.'},{store,notify:async()=>({ok:true})});
  assert.equal(value.assistanceRequest.shareAnonymized,true);
  assert.equal(value.assistanceRequest.contactPreference,'phone');

@@ -47,3 +47,8 @@ test('mobile header always names the professional signup action completely',asyn
  assert.match(header,/>Alta profesional</);
  assert.doesNotMatch(header,/>Dar de alta</);
 });
+
+test('admin and lead email expose the saved qualification fields',async()=>{
+ const [admin,email]=await Promise.all([read('app/administracion/[id]/page.jsx'),read('lib/case-email.mjs')]);
+ for(const text of ['contactPreference','assistanceRequest','notes']){assert.match(admin,new RegExp(text));assert.match(email,new RegExp(text));}
+});
