@@ -8,6 +8,8 @@ test('direct professional request prototype covers customer and admin journeys',
  const html=await readFile(path,'utf8');
  for(const copy of ['¿Qué profesional necesitas?','Ubicación del trabajo','Cuéntanos el proyecto','Tus datos de contacto','Revisa y envía','Solicitud registrada','Solicitudes de profesionales','Presupuestos y ofertas','Buscar candidatos compatibles','Preparar solicitud a seleccionados'])assert.match(html,new RegExp(copy));
  assert.match(html,/14,90\s*€/);
+ assert.match(html,/Primero encontramos profesionales compatibles\. Después decides si activar la búsqueda\./);
+ assert.match(html,/Pago único, después de confirmar candidatos/);
  assert.match(html,/No se realizará ningún cargo/);
  assert.match(html,/Demostración interactiva/);
  assert.doesNotMatch(html,/href=["'][^"']*estimador/i);
