@@ -6,8 +6,12 @@ const path=new URL('../public/prototipos/solicitud-profesional/index.html',impor
 
 test('direct professional request prototype covers customer and admin journeys',async()=>{
  const html=await readFile(path,'utf8');
- for(const copy of ['Describe la obra. Recibe el presupuesto.','Generar presupuesto','Después del presupuesto, encuentra quién puede ejecutar la obra.','¿Qué profesional necesitas?','Ubicación del trabajo','Cuéntanos el proyecto','Tus datos de contacto','Revisa y envía','Solicitud registrada','Solicitudes de profesionales','Presupuestos y ofertas','Buscar candidatos compatibles','Preparar solicitud a seleccionados'])assert.match(html,new RegExp(copy));
- assert.ok(html.indexOf('id="budget-hero"')<html.indexOf('id="professional-hero"'),'budget hero must precede professional hero');
+ for(const copy of ['Describe la obra. Recibe el presupuesto.','Generar presupuesto','Capítulos, mediciones, hipótesis y exclusiones','Después del presupuesto, encuentra quién puede ejecutar la obra.','¿Qué profesional necesitas?','Centro administrativo','Ubicación del trabajo','Cuéntanos el proyecto','Tus datos de contacto','Revisa y envía','Solicitud registrada','Solicitudes de profesionales','Presupuestos y ofertas','Buscar candidatos compatibles','Preparar solicitud a seleccionados'])assert.match(html,new RegExp(copy));
+ assert.match(html,/PDF<\/b><span>maquetado técnico/);
+ assert.match(html,/Excel<\/b><span>con mediciones/);
+ const sectionOrder=['id="budget-hero"','id="budget-proof"','id="specialties"','id="professional-hero"','id="site-footer"'].map(marker=>html.indexOf(marker));
+ assert.deepEqual(sectionOrder,[...sectionOrder].sort((a,b)=>a-b),'hybrid landing sections must follow the approved order');
+ assert.ok(sectionOrder.every(index=>index>=0),'every approved section must exist');
  assert.match(html,/data-budget-demo/);
  assert.match(html,/14,90\s*€/);
  assert.match(html,/Primero encontramos profesionales compatibles\. Después decides si activar la búsqueda\./);
