@@ -32,9 +32,12 @@ test('hybrid home keeps the budget intake first and the approved section order',
 
 test('professional centre and signup expose the essential launch experience',async()=>{
  const [directory,signup,form]=await Promise.all([read('app/profesionales/page.jsx'),read('app/profesionales/alta/page.jsx'),read('components/ProfessionalSignupForm.jsx')]);
- assert.match(directory,/Encuentra profesionales para llevar tu presupuesto a obra/);
- assert.match(directory,/Explora trabajos y descubre quién puede ejecutarlos/);
- assert.match(directory,/Reformas integrales/);
+ assert.match(directory,/Tu oficio\. Oportunidades que encajan contigo/);
+ assert.match(directory,/No publicamos obras abiertas/);
+ assert.match(directory,/trades-atlas-01/);
+ assert.match(directory,/trades-atlas-02/);
+ assert.doesNotMatch(directory,/Generar (mi )?presupuesto/);
+ assert.doesNotMatch(directory,/href="\/profesionales\/alta"/);
  assert.match(signup,/Perfil, portfolio y verificación/);
  assert.match(form,/Datos profesionales/);
  assert.match(form,/Servicios y cobertura/);
