@@ -81,6 +81,22 @@ test('professional centre and signup expose the essential launch experience',asy
  assert.match(form,/Revisar y enviar/);
 });
 
+test('professional account journey includes recovery, reset and logout',async()=>{
+ const [login,access,requestPage,requestForm,resetPage,resetForm,panel,logout,requestApi,resetApi]=await Promise.all([
+  read('components/ProfessionalLoginForm.jsx'),read('app/profesionales/acceso/page.jsx'),read('app/profesionales/recuperar-clave/page.jsx'),read('components/ProfessionalPasswordRequestForm.jsx'),read('app/profesionales/restablecer-clave/page.jsx'),read('components/ProfessionalPasswordResetForm.jsx'),read('app/profesionales/panel/page.jsx'),read('components/ProfessionalLogoutButton.jsx'),read('app/api/professionals/password/request/route.js'),read('app/api/professionals/password/reset/route.js')
+ ]);
+ assert.match(login,/profesionales\/recuperar-clave/);
+ assert.match(login,/¿Has olvidado tu contraseña\?/);
+ assert.match(access,/ProfessionalLoginForm/);
+ assert.match(login,/params\.get\('reset'\)/);
+ assert.match(requestPage+requestForm,/Enviar enlace de recuperación/);
+ assert.match(resetPage+resetForm,/Guardar contraseña nueva/);
+ assert.match(panel,/ProfessionalLogoutButton/);
+ assert.match(logout,/api\/professionals\/logout/);
+ assert.match(requestApi,/createProfessionalPasswordResetToken/);
+ assert.match(resetApi,/verifyProfessionalPasswordResetToken/);
+});
+
 test('mobile header always names the professional signup action completely',async()=>{
  const [header,footer,sitemap]=await Promise.all([read('components/Header.jsx'),read('components/Footer.jsx'),read('app/sitemap.js')]);
  assert.match(header,/href="\/profesionales\/portal"/);

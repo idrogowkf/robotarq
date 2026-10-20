@@ -1,0 +1,3 @@
+import ProfessionalPasswordRequestForm from '@/components/ProfessionalPasswordRequestForm';
+export const metadata={title:'Recuperar acceso profesional | robotARQ',robots:{index:false,follow:false}};
+export default function Page(){return <main className="mx-auto max-w-md px-4 pb-16 pt-24"><p className="text-xs font-bold uppercase tracking-widest text-sky-700">Cuenta profesional</p><h1 className="mt-2 text-4xl font-extrabold">Recuperar contraseña</h1><p className="mt-3 text-slate-600">Escribe el correo de tu perfil profesional. Recibirás un enlace temporal de un solo uso para crear una contraseña nueva.</p><ProfessionalPasswordRequestForm/></main>}
