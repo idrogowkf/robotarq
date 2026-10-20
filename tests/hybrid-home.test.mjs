@@ -11,7 +11,9 @@ test('production home uses the approved hybrid marketplace with real provider da
  assert.match(market,/ProfessionalCarousel/);
  assert.match(carousel,/Especialidad robotARQ/);
  assert.match(carousel,/Solicitar profesional/);
- assert.match(carousel,/muestra-profesional/);
+ assert.match(carousel,/solicitar-profesional/);
+ assert.doesNotMatch(carousel,/\/estimador\?tipo=otro&origen=muestra-profesional/);
+ assert.match(carousel,/samples\.slice\(0,available\)/);
  assert.doesNotMatch(carousel,/Esta posición se reserva/);
  assert.match(carousel,/Perfiles anteriores/);
  assert.match(carousel,/Perfiles siguientes/);
@@ -28,11 +30,24 @@ test('hybrid home keeps the budget intake first and the approved section order',
  assert.ok(intake>0&&output>intake&&market>output&&categories>market);
  assert.match(home,/Describe la obra\. Recibe el presupuesto\./);
  assert.match(home,/hero-arquitectura-madrid\.webp/);
- assert.match(home,/value\.featured/);
+ assert.match(home,/isFeaturedProvider/);
  assert.match(home,/Presupuesta primero\. Decide con mejor información\./);
  assert.match(home,/Convierte el presupuesto en obra/);
  assert.match(home,/pb-14 pt-24/);
  assert.doesNotMatch(home,/<b className="block text-2xl">España<\/b>precios en euros/);
+});
+
+test('direct professional request has its own authenticated customer journey',async()=>{
+ const [page,form,account,api]=await Promise.all([
+  read('app/solicitar-profesional/page.jsx'),
+  read('components/ProfessionalRequestForm.jsx'),
+  read('app/mi-cuenta/page.jsx'),
+  read('app/api/professional-requests/route.js')
+ ]);
+ assert.match(page,/Solicita el profesional que necesitas/);
+ for(const text of ['Datos del trabajo','Ubicación y plazo','Crear cuenta','Ya tengo cuenta','Enviar solicitud'])assert.match(form,new RegExp(text));
+ assert.match(account,/Profesionales solicitados/);
+ assert.match(api,/customerSessionFromRequest/);
 });
 
 test('landing photography and unavailable sample flow stay coherent',async()=>{

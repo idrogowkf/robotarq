@@ -1,6 +1,6 @@
 import {buildSitemapEntries} from '../lib/seo-pages.mjs';
 
-const core=['','/presupuesto-reforma','/estimador','/profesionales','/profesionales/alta','/profesionales-reformas','/empresas-constructoras','/contacto','/reformas-hosteleria','/reformas-locales','/reformas-viviendas'];
+const core=['','/presupuesto-reforma','/estimador','/solicitar-profesional','/profesionales','/profesionales/alta','/profesionales-reformas','/empresas-constructoras','/contacto','/reformas-hosteleria','/reformas-locales','/reformas-viviendas'];
 
 export default function sitemap(){
   return [
