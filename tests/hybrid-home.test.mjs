@@ -94,6 +94,7 @@ test('professional account journey includes recovery, reset and logout',async()=
  assert.match(panel,/ProfessionalLogoutButton/);
  assert.match(logout,/api\/professionals\/logout/);
  assert.match(requestApi,/createProfessionalPasswordResetToken/);
+ assert.match(requestApi,/new URL\(req\.url\)\.origin/);
  assert.match(resetApi,/verifyProfessionalPasswordResetToken/);
 });
 
