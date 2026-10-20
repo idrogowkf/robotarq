@@ -9,11 +9,9 @@ test('production home uses the approved hybrid marketplace with real provider da
  assert.match(home,/HomeMarketplace/);
  assert.match(carousel,/providers\.map/);
  assert.match(market,/ProfessionalCarousel/);
- assert.match(carousel,/Especialidad robotARQ/);
- assert.match(carousel,/Solicitar profesional/);
- assert.match(carousel,/solicitar-profesional/);
+ assert.match(carousel,/Ver perfil y trabajos/);
  assert.doesNotMatch(carousel,/\/estimador\?tipo=otro&origen=muestra-profesional/);
- assert.match(carousel,/samples\.slice\(0,available\)/);
+ assert.doesNotMatch(carousel,/samples\.slice/);
  assert.doesNotMatch(carousel,/Esta posición se reserva/);
  assert.match(carousel,/Perfiles anteriores/);
  assert.match(carousel,/Perfiles siguientes/);
@@ -51,26 +49,31 @@ test('direct professional request has its own authenticated customer journey',as
  assert.match(form,/¿Has olvidado tu contraseña\?/);
  assert.match(form,/href="\/recuperar-clave"/);
  assert.doesNotMatch(form,/NIF\/CIF|Confirmar contraseña/);
+ for(const trade of ['pintur','carpinter','climat','cubiert'])assert.match(form,new RegExp(`includes\\('${trade}`));
  assert.match(account,/Profesionales solicitados/);
  assert.match(api,/customerSessionFromRequest/);
 });
 
 test('landing photography and unavailable sample flow stay coherent',async()=>{
- const [market,carousel,estimator,providerForm]=await Promise.all([read('components/HomeMarketplace.jsx'),read('components/ProfessionalCarousel.jsx'),read('app/estimador/page.jsx'),read('components/ProviderForm.jsx')]);
- for(const asset of ['reforma-integral-madrid.webp','reforma-hosteleria.webp','tecnicos-rehabilitacion.webp'])assert.match(market,new RegExp(asset.replace('.','\\.')));
- for(const asset of ['fontaneria-instalacion.webp','electricidad-cuadro.webp'])assert.match(carousel,new RegExp(asset.replace('.','\\.')));
+ const [market,tradeGrid,estimator,providerForm]=await Promise.all([read('components/HomeMarketplace.jsx'),read('components/ProfessionalTradeGrid.jsx'),read('app/estimador/page.jsx'),read('components/ProviderForm.jsx')]);
+ for(const asset of ['trades-atlas-01.png','trades-atlas-02.png'])assert.match(tradeGrid,new RegExp(asset.replace('.','\\.')));
  assert.match(estimator,/El profesional concreto no está disponible/);
  assert.match(providerForm,/Destacar en la portada/);
 });
 
 test('professional centre and signup expose the essential launch experience',async()=>{
- const [directory,signup,form]=await Promise.all([read('app/profesionales/page.jsx'),read('app/profesionales/alta/page.jsx'),read('components/ProfessionalSignupForm.jsx')]);
- assert.match(directory,/Tu oficio\. Oportunidades que encajan contigo/);
- assert.match(directory,/No publicamos obras abiertas/);
- assert.match(directory,/trades-atlas-01/);
- assert.match(directory,/trades-atlas-02/);
- assert.doesNotMatch(directory,/Generar (mi )?presupuesto/);
- assert.doesNotMatch(directory,/href="\/profesionales\/alta"/);
+ const [directory,portal,tradeGrid,signup,form]=await Promise.all([read('app/profesionales/page.jsx'),read('app/profesionales/portal/page.jsx'),read('components/ProfessionalTradeGrid.jsx'),read('app/profesionales/alta/page.jsx'),read('components/ProfessionalSignupForm.jsx')]);
+ assert.match(directory,/Busca el gremio que necesita tu obra/);
+ assert.match(directory,/ProfessionalTradeGrid/);
+ assert.match(tradeGrid,/solicitar-profesional\?origen=/);
+ assert.match(tradeGrid,/trades-atlas-01/);
+ assert.match(tradeGrid,/trades-atlas-02/);
+ assert.doesNotMatch(directory,/Acceder al panel profesional|Entrar en mi cuenta profesional|Tu oficio\. Oportunidades/);
+ assert.match(portal,/Tu oficio\. Oportunidades que encajan contigo/);
+ assert.match(portal,/Acceder al panel profesional/);
+ assert.match(portal,/Crear mi perfil profesional/);
+ assert.match(portal,/href="\/profesionales\/acceso"/);
+ assert.match(portal,/href="\/profesionales\/alta"/);
  assert.match(signup,/Perfil, portfolio y verificación/);
  assert.match(form,/Datos profesionales/);
  assert.match(form,/Servicios y cobertura/);
@@ -80,8 +83,20 @@ test('professional centre and signup expose the essential launch experience',asy
 
 test('mobile header always names the professional signup action completely',async()=>{
  const header=await read('components/Header.jsx');
- assert.match(header,/>Alta profesional</);
+ assert.match(header,/href="\/profesionales\/portal"/);
+ assert.match(header,/>¿Eres profesional\?</);
  assert.doesNotMatch(header,/>Dar de alta</);
+});
+
+test('landing trade cards use the approved illustrations and open direct requests',async()=>{
+ const [market,tradeGrid,carousel]=await Promise.all([read('components/HomeMarketplace.jsx'),read('components/ProfessionalTradeGrid.jsx'),read('components/ProfessionalCarousel.jsx')]);
+ assert.match(market,/¿Qué profesional necesitas\?/);
+ assert.match(market,/ProfessionalTradeGrid/);
+ assert.match(tradeGrid,/trades-atlas-01\.png/);
+ assert.match(tradeGrid,/trades-atlas-02\.png/);
+ assert.match(tradeGrid,/solicitar-profesional\?origen=/);
+ assert.doesNotMatch(market,/Primero defines el alcance y el presupuesto/);
+ assert.doesNotMatch(carousel,/Especialidad robotARQ/);
 });
 
 test('admin and lead email expose the saved qualification fields',async()=>{
