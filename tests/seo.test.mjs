@@ -71,3 +71,8 @@ test('search hubs and navigation connect the three public journeys',async()=>{
   assert.match(home,/["']\/presupuestos["']/);
 });
 
+test('nested public pages do not duplicate the robotARQ title template',async()=>{
+  const requestPage=await read('app/solicitar-profesional/page.jsx');
+  assert.doesNotMatch(requestPage,/title:'[^']*\| robotARQ'/);
+});
+
