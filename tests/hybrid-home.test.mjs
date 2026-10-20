@@ -47,6 +47,8 @@ test('direct professional request has its own authenticated customer journey',as
  assert.match(page,/Encuentra el profesional adecuado para tu obra/);
  for(const text of ['Elige una categoría profesional','Tipo de servicio','Puntuación','Enviar mensaje','Ya tengo una cuenta','Enviar solicitud y crear cuenta'])assert.match(form,new RegExp(text));
  assert.match(form,/Apellidos/);
+ assert.match(form,/¿Has olvidado tu contraseña\?/);
+ assert.match(form,/href="\/recuperar-clave"/);
  assert.doesNotMatch(form,/NIF\/CIF|Confirmar contraseña/);
  assert.match(account,/Profesionales solicitados/);
  assert.match(api,/customerSessionFromRequest/);
