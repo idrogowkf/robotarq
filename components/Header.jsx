@@ -16,6 +16,7 @@ export default function Header() {
 
         <nav aria-label="Navegación principal" className="flex items-center gap-2 sm:gap-4">
           <Link href="/estimador" className="text-xs font-bold hover:text-sky-700 sm:text-sm">Generar presupuesto</Link>
+          <Link href="/presupuestos" className="hidden text-sm font-semibold text-slate-600 hover:text-sky-700 md:inline">Presupuestos</Link>
           <Link href="/profesionales" className="hidden text-sm font-semibold text-slate-600 hover:text-sky-700 lg:inline">Buscar profesionales</Link>
           <Link href="/acceso" className="hidden text-sm font-semibold text-slate-600 hover:text-sky-700 xl:inline">Mis presupuestos</Link>
           <Link href="/profesionales/portal" className="rounded-xl border-2 border-sky-700 bg-sky-50 px-3 py-2 text-xs font-extrabold text-sky-900 shadow-sm hover:bg-sky-100 sm:px-4 sm:text-sm">¿Eres profesional?</Link>

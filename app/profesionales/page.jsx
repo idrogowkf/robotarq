@@ -2,7 +2,7 @@ import Link from 'next/link';
 import ProfessionalTradeGrid from '@/components/ProfessionalTradeGrid';
 import {listPublicProviders} from '@/lib/providers.mjs';
 
-export const metadata={title:'Buscar profesionales de reformas y construcción | robotARQ',description:'Elige el gremio que necesita tu obra y envía una solicitud a profesionales compatibles de tu zona.',alternates:{canonical:'/profesionales'}};
+export const metadata={title:'Buscar profesionales de reformas y construcción',description:'Elige el gremio que necesita tu obra y envía una solicitud a profesionales compatibles de tu zona en España.',alternates:{canonical:'/profesionales'}};
 export const dynamic='force-dynamic';
 
 export default async function Page(){let providers=[];try{providers=(await listPublicProviders({page:1,pageSize:24})).items}catch{}return <main className="bg-[#f6f7f3] pb-20 pt-16">

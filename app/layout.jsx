@@ -63,14 +63,24 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-    const jsonLd = {
+    const organization = {
         "@context": "https://schema.org",
         "@type": "Organization",
+        "@id": `${siteUrl}/#organization`,
         name: "robotARQ",
         url: siteUrl,
         logo: `${siteUrl}/favicon-32x32.png`,
         description:
-            "Estimaciones orientativas de reformas y revisión técnica.",
+            "Presupuestos orientativos de obras y reformas y conexión con profesionales en España.",
+        email: "hola@robotarq.com",
+        telephone: "+34 624473123",
+        areaServed: { "@type": "Country", name: "España" },
+        knowsLanguage: "es-ES",
+        makesOffer: {
+            "@type": "Offer",
+            priceCurrency: "EUR",
+            itemOffered: { "@type": "Service", name: "Estimación de obras y reformas en España" },
+        },
 
         contactPoint: [{
             "@type": "ContactPoint",
@@ -79,20 +89,15 @@ export default function RootLayout({ children }) {
             areaServed: "ES",
             availableLanguage: "Spanish",
         }],
-        address: {
-            "@type": "PostalAddress",
-            addressCountry: "ES",
-            addressLocality: "Madrid",
-            addressRegion: "Comunidad de Madrid",
-        },
     };
+    const website = {"@context":"https://schema.org","@type":"WebSite","@id":`${siteUrl}/#website`,name:"robotARQ",url:siteUrl,inLanguage:"es-ES",publisher:{"@id":`${siteUrl}/#organization`}};
 
     return (
-        <html lang="es">
+        <html lang="es-ES">
             <head>
                 <link rel="icon" href="/favicon.ico" />
                 <script type="application/ld+json"
-                    dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify({"@context":"https://schema.org","@graph":[organization,website]}) }} />
             </head>
             <body className="bg-white text-gray-900 flex flex-col min-h-screen">
                 <Header />
