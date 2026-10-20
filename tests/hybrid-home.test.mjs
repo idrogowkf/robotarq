@@ -82,9 +82,11 @@ test('professional centre and signup expose the essential launch experience',asy
 });
 
 test('mobile header always names the professional signup action completely',async()=>{
- const header=await read('components/Header.jsx');
+ const [header,footer,sitemap]=await Promise.all([read('components/Header.jsx'),read('components/Footer.jsx'),read('app/sitemap.js')]);
  assert.match(header,/href="\/profesionales\/portal"/);
  assert.match(header,/>¿Eres profesional\?</);
+ assert.match(footer,/href="\/profesionales\/portal"[^>]*>Área profesional</);
+ assert.match(sitemap,/\/profesionales\/portal/);
  assert.doesNotMatch(header,/>Dar de alta</);
 });
 
