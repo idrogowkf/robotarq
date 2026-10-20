@@ -44,8 +44,8 @@ test('direct professional request has its own authenticated customer journey',as
   read('app/mi-cuenta/page.jsx'),
   read('app/api/professional-requests/route.js')
  ]);
- assert.match(page,/Solicita el profesional que necesitas/);
- for(const text of ['Datos del trabajo','Ubicación y plazo','Crear cuenta','Ya tengo cuenta','Enviar solicitud'])assert.match(form,new RegExp(text));
+ assert.match(page,/Encuentra el profesional adecuado para tu obra/);
+ for(const text of ['Elige una categoría profesional','Tipo de servicio','Puntuación','Enviar mensaje','Ya tengo una cuenta','Enviar solicitud y crear cuenta'])assert.match(form,new RegExp(text));
  assert.match(account,/Profesionales solicitados/);
  assert.match(api,/customerSessionFromRequest/);
 });
