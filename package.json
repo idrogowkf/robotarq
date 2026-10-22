@@ -6,8 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node --test tests/*.test.mjs",
-    "audit:seo": "node scripts/audit-seo.mjs",
+    "test": "node scripts/test-with-server.mjs",
+    "audit:seo": "node scripts/audit-seo.mjs https://robotarq.com",
     "test:unit": "node --test tests/unit.test.mjs",
     "lint": "eslint app components lib tests"
   },
@@ -16,7 +16,7 @@
     "@vercel/blob": "^2.8.1",
     "autoprefixer": "^10.4.19",
     "exceljs": "^4.4.0",
-    "next": "^16.4.0",
+    "next": "^16.4.2",
     "pdf-lib": "^1.17.1",
     "postcss": "^8.5.29",
     "react": "^19.3.0",
@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "eslint": "^9.37.0",
-    "eslint-config-next": "^16.4.0",
+    "eslint-config-next": "^16.4.2",
     "tailwindcss": "^3.4.13"
   },
   "overrides": {
